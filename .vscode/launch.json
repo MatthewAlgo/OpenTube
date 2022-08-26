@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "name": "FlutterDebug",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "debug",
+      "args": [
+        "--no-sound-null-safety --web-renderer=html"
+      ]
+    },
+
+  ]
+}
