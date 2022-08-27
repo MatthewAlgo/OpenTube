@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:libretube/views/errorview.dart';
+import 'package:libretube/views/loadingview.dart';
 import 'package:libretube/views/videoview.dart';
 import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -19,7 +21,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late final _editingcontroller;
-
+  late VideoSearchList VideosSearched;
   @override
   void initState() {
     _editingcontroller = TextEditingController();
@@ -36,25 +38,7 @@ class _HomePageState extends State<HomePage> {
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
-          body: FutureBuilder<VideoSearchList>(
-            future: getSearch("Spacex Nasa"),
-            builder: (BuildContext context,
-                AsyncSnapshot<VideoSearchList> snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator();
-              } else if (snapshot.connectionState == ConnectionState.done) {
-                if (snapshot.hasError) {
-                  return const Text('Error');
-                } else if (snapshot.hasData) {
-                  return BuildCards(context, snapshot.data);
-                } else {
-                  return const Text('Empty data');
-                }
-              } else {
-                return Text('State: ${snapshot.connectionState}');
-              }
-            },
-          ),
+          body: returnFutureBuilder("World News"),
           appBar: PreferredSize(
               preferredSize: const Size(double.infinity, 65),
               child: SafeArea(
@@ -84,7 +68,9 @@ class _HomePageState extends State<HomePage> {
                     textStyle: GoogleFonts.sacramento(
                       textStyle: Theme.of(context).textTheme.displaySmall,
                     ),
-                    onChanged: (text) => debugPrint(text),
+                    onChanged: (text) {
+                      assignData(text);
+                    },
                     searchTextEditingController: _editingcontroller,
                     horizontalPadding: 5),
               ))),
@@ -140,9 +126,34 @@ class _HomePageState extends State<HomePage> {
                               VideoView(list?.elementAt(index).url)),
                     );
                     // Show view with the video itself
-                    ;
                   },
                 ));
         });
+  }
+
+  Future<VideoSearchList> assignData(String que) async {
+    VideosSearched = await getSearch(que);
+    return VideosSearched;
+  }
+
+  Widget returnFutureBuilder(String query) {
+    return FutureBuilder<VideoSearchList>(
+      future: assignData(query),
+      builder: (BuildContext context, AsyncSnapshot<VideoSearchList> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const LoadingView();
+        } else if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.hasError) {
+            return const ErrorView();
+          } else if (snapshot.hasData) {
+            return BuildCards(context, snapshot.data);
+          } else {
+            return BuildCards(context, snapshot.data);
+          }
+        } else {
+          return Text('State: ${snapshot.connectionState}');
+        }
+      },
+    );
   }
 }

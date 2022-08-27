@@ -13,7 +13,7 @@ void main() {
       initialRoute: '/',
       routes: {
         '/': (context) => HomePage(),
-        '/video': (context) => VideoView("")
+        
       }));
 }
 
