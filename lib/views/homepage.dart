@@ -14,6 +14,7 @@ import '../utilities/youtube.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
+  static late String searchQuery;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -22,10 +23,26 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late final _editingcontroller;
   late VideoSearchList VideosSearched;
+  late final ScrollController controller = ScrollController();
   @override
   void initState() {
     _editingcontroller = TextEditingController();
+    _editingcontroller.addListener(_updateState);
+    controller.addListener(() {
+      if (controller.position.maxScrollExtent == controller.offset) {}
+    });
+
     super.initState();
+  }
+
+  void _updateState() {
+    refresh();
+  }
+
+  Future fetch() async {
+    setState(() async {
+      VideosSearched = (await VideosSearched.nextPage())!;
+    });
   }
 
   @override
@@ -35,10 +52,11 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = ScrollController();
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
-          body: returnFutureBuilder("World News"),
+          body: returnFutureBuilder("Artemis 1"),
           appBar: PreferredSize(
               preferredSize: const Size(double.infinity, 65),
               child: SafeArea(
@@ -78,57 +96,76 @@ class _HomePageState extends State<HomePage> {
             items: [
               TabItem(icon: Icons.home, title: 'Home'),
               TabItem(icon: Icons.map, title: 'Discovery'),
-              TabItem(icon: Icons.add, title: 'Add'),
-              TabItem(icon: Icons.message, title: 'Message'),
               TabItem(icon: Icons.people, title: 'Profile'),
             ],
-            initialActiveIndex: 2, //optional, default as 0
+            initialActiveIndex: 0, //optional, default as 0
             onTap: (int i) => print('click index=$i'),
           )),
     );
   }
 
+  Future refresh() async {
+    setState(() {
+      assignData(_editingcontroller.toString());
+    });
+  }
+
   Widget BuildCards(BuildContext context, VideoSearchList? list) {
-    return ListView.builder(
-        itemCount: list?.length,
-        itemBuilder: (context, index) {
-          return (index == list?.length)
-              ? Container(
-                  color: Colors.greenAccent,
-                  child: TextButton(
-                    child: const Text("Load More"),
-                    onPressed: () {},
-                  ),
-                )
-              : Card(
-                  child: ListTile(
-                  title: Text(list?.elementAt(index).title ?? ""),
-                  subtitle: Text(list?.elementAt(index).description ?? ""),
-                  leading: Container(
-                    width: 100.0,
-                    height: 150.0,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                      color: Colors.white,
-                    ),
-                    child: Image.network(
-                      list?.elementAt(index).thumbnails.standardResUrl ?? "",
-                      height: 150.0,
-                      width: 100.0,
-                    ),
-                  ),
-                  trailing: const Icon(Icons.play_arrow),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              VideoView(list?.elementAt(index).url)),
-                    );
-                    // Show view with the video itself
-                  },
-                ));
-        });
+    return RefreshIndicator(
+      onRefresh: refresh,
+      child: ListView.builder(
+          itemCount: list?.length ?? 0 + 1,
+          itemBuilder: (context, index) {
+            if (list != null) {
+              if (index < list.length) {
+                return Card(
+                    child: ListTile(
+                        title: Text(list?.elementAt(index).title ?? ""),
+                        subtitle:
+                            Text(list?.elementAt(index).description ?? ""),
+                        leading: Container(
+                          decoration: BoxDecoration(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(8.0)),
+                            color: Colors.white,
+                          ),
+                          child: Image.network(
+                            list?.elementAt(index).thumbnails.standardResUrl ??
+                                "",
+                            height: 150.0,
+                            width: 100.0,
+                          ),
+                        ),
+                        trailing: const Icon(Icons.play_arrow),
+                        onTap: () async {
+                          VideoInfo.comms =
+                              await getComments(list?.elementAt(index));
+                          // ignore: use_build_context_synchronously
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              // Populate static video info to be passed further
+                              VideoInfo.ID =
+                                  list?.elementAt(index).id.toString() ?? "";
+                              VideoInfo.author =
+                                  list?.elementAt(index).author ?? "";
+                              VideoInfo.description =
+                                  list?.elementAt(index).description ?? "";
+                              VideoInfo.name =
+                                  list?.elementAt(index).title ?? "";
+                              VideoInfo.publishDate =
+                                  list?.elementAt(index).publishDate;
+                              return const VideoView();
+                            }),
+                          );
+                        }));
+              }
+            }
+            return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 32),
+                child: Center(child: CircularProgressIndicator()));
+          }),
+    );
   }
 
   Future<VideoSearchList> assignData(String que) async {
@@ -156,4 +193,14 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
+}
+
+class VideoInfo {
+  static late String name;
+  static late String ID;
+  static late String author;
+  static late List<String> comments;
+  static late String description;
+  static late DateTime? publishDate;
+  static late CommentsList? comms;
 }

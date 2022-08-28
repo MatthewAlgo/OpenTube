@@ -13,7 +13,6 @@ void main() {
       initialRoute: '/',
       routes: {
         '/': (context) => HomePage(),
-        
       }));
 }
 

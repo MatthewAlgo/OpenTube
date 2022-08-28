@@ -12,3 +12,9 @@ Future<VideoSearchList> getSearch(String searchquery) async {
   return search;
 }
 
+Future<CommentsList?> getComments(Video? video) async{
+  var yt = YoutubeExplode();
+  var comments = await yt.videos.commentsClient.getComments(video!);
+  return comments;
+}
+
