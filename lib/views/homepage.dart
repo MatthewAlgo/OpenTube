@@ -1,8 +1,10 @@
 import 'package:animation_search_bar/animation_search_bar.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter_image/network.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:libretube/views/errorview.dart';
 import 'package:libretube/views/loadingview.dart';
@@ -14,7 +16,8 @@ import '../utilities/youtube.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
-  static late String searchQuery;
+  static String searchQuery = "";
+  static bool loadingState = false; // Acts like a pseudo-mutex
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -23,40 +26,71 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late final _editingcontroller;
   late VideoSearchList VideosSearched;
-  late final ScrollController controller = ScrollController();
+  late List<Video> VideosSearchedList;
+  final ScrollController controller = ScrollController();
+
   @override
   void initState() {
+    var focusNode = FocusNode();
     _editingcontroller = TextEditingController();
-    _editingcontroller.addListener(_updateState);
-    controller.addListener(() {
-      if (controller.position.maxScrollExtent == controller.offset) {}
+    controller.addListener(() async {
+      if (controller.position.atEdge &&
+          !(controller.position.pixels == 0) &&
+          !HomePage.loadingState) {
+        await fetch();
+        print("Load more data");
+      }
     });
 
     super.initState();
   }
 
-  void _updateState() {
-    refresh();
+  Future fetch() async {
+    HomePage.loadingState = true;
+    await appendToSearchList(VideosSearched);
+    HomePage.loadingState = false;
+    setState(() {});
   }
 
-  Future fetch() async {
-    setState(() async {
-      VideosSearched = (await VideosSearched.nextPage())!;
-    });
+  Future<List<Video>> assignData(String que) async {
+    List<Video> myVideoList = [];
+    VideosSearched = await getSearch(que);
+    var videoIterator = VideosSearched.iterator;
+    while (videoIterator.moveNext()) {
+      myVideoList.add(videoIterator.current);
+    }
+    VideosSearchedList = myVideoList;
+    return myVideoList;
+  }
+
+  Future<bool> _updateState() async {
+    try {
+      HomePage.loadingState = true;
+      HomePage.searchQuery = _editingcontroller.text;
+      VideosSearched = await getSearch(HomePage.searchQuery);
+      VideosSearchedList = await assignData(HomePage.searchQuery);
+
+      setState(() {});
+      HomePage.loadingState = false;
+      return true;
+    } on Exception catch (e) {
+      print("Error: ${e.toString()}");
+      return true;
+    }
   }
 
   @override
   void dispose() {
     super.dispose();
+    controller.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final controller = ScrollController();
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
-          body: returnFutureBuilder("Artemis 1"),
+          body: returnFutureBuilder(HomePage.searchQuery),
           appBar: PreferredSize(
               preferredSize: const Size(double.infinity, 65),
               child: SafeArea(
@@ -86,8 +120,11 @@ class _HomePageState extends State<HomePage> {
                     textStyle: GoogleFonts.sacramento(
                       textStyle: Theme.of(context).textTheme.displaySmall,
                     ),
-                    onChanged: (text) {
-                      assignData(text);
+                    onChanged: (text) async {
+                      if (text == "mamma") {
+                        HomePage.searchQuery = _editingcontroller.text;
+                        await _updateState();
+                      }
                     },
                     searchTextEditingController: _editingcontroller,
                     horizontalPadding: 5),
@@ -104,57 +141,64 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future refresh() async {
-    setState(() {
-      assignData(_editingcontroller.toString());
-    });
-  }
-
-  Widget BuildCards(BuildContext context, VideoSearchList? list) {
+  Widget BuildCards(BuildContext context, List<Video>? list) {
     return RefreshIndicator(
-      onRefresh: refresh,
+      onRefresh: () async {
+        await _updateState();
+      },
       child: ListView.builder(
+          controller: controller,
           itemCount: list?.length ?? 0 + 1,
           itemBuilder: (context, index) {
             if (list != null) {
               if (index < list.length) {
                 return Card(
                     child: ListTile(
-                        title: Text(list?.elementAt(index).title ?? ""),
-                        subtitle:
-                            Text(list?.elementAt(index).description ?? ""),
+                        title: Text(list.elementAt(index).title),
+                        subtitle: Text(list.elementAt(index).description ?? ""),
                         leading: Container(
                           decoration: BoxDecoration(
                             borderRadius:
                                 BorderRadius.all(Radius.circular(8.0)),
                             color: Colors.white,
                           ),
-                          child: Image.network(
-                            list?.elementAt(index).thumbnails.standardResUrl ??
-                                "",
-                            height: 150.0,
-                            width: 100.0,
-                          ),
+                          child: 
+                            FadeInImage(
+  placeholder: MemoryImage(Icons.sp),
+  image: NetworkImageWithRetry(
+    list.elementAt(index).thumbnails.standardResUrl
+  ),
+  fit: BoxFit.cover,
+  fadeInDuration: Duration(milliseconds: 150)
+),
+                          // Image.network(
+                          //   list.elementAt(index).thumbnails.standardResUrl,
+                          //   height: 150.0,
+                          //   width: 100.0,
+                          //   errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace) {
+                          //     return Text('Your error widget...');
+                          //   },
+                          // ),
                         ),
                         trailing: const Icon(Icons.play_arrow),
                         onTap: () async {
                           VideoInfo.comms =
-                              await getComments(list?.elementAt(index));
+                              await getComments(list.elementAt(index));
                           // ignore: use_build_context_synchronously
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) {
                               // Populate static video info to be passed further
                               VideoInfo.ID =
-                                  list?.elementAt(index).id.toString() ?? "";
+                                  list.elementAt(index).id.toString() ?? "";
                               VideoInfo.author =
-                                  list?.elementAt(index).author ?? "";
+                                  list.elementAt(index).author ?? "";
                               VideoInfo.description =
-                                  list?.elementAt(index).description ?? "";
+                                  list.elementAt(index).description ?? "";
                               VideoInfo.name =
-                                  list?.elementAt(index).title ?? "";
+                                  list.elementAt(index).title ?? "";
                               VideoInfo.publishDate =
-                                  list?.elementAt(index).publishDate;
+                                  list.elementAt(index).publishDate;
                               return const VideoView();
                             }),
                           );
@@ -168,15 +212,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<VideoSearchList> assignData(String que) async {
-    VideosSearched = await getSearch(que);
-    return VideosSearched;
-  }
-
   Widget returnFutureBuilder(String query) {
-    return FutureBuilder<VideoSearchList>(
-      future: assignData(query),
-      builder: (BuildContext context, AsyncSnapshot<VideoSearchList> snapshot) {
+    return FutureBuilder<List<Video>>(
+      future: assignData(HomePage.searchQuery),
+      builder: (BuildContext context, AsyncSnapshot<List<Video>> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const LoadingView();
         } else if (snapshot.connectionState == ConnectionState.done) {

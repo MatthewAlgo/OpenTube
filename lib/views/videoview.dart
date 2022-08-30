@@ -49,7 +49,6 @@ class _VideoViewState extends State<VideoView> {
 
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
         theme: ThemeData(useMaterial3: true),
         home: Scaffold(
@@ -139,12 +138,12 @@ class _VideoViewState extends State<VideoView> {
                           dense: false,
                           leading: FlutterLogo(),
                           title: Text(
-                            VideoInfo.comms!.elementAt(index).author ?? "",
+                            VideoInfo.comms?.elementAt(index).author ?? "",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 20),
                           ),
                           subtitle: Text(
-                            VideoInfo.comms!.elementAt(index).text ?? "",
+                            VideoInfo.comms?.elementAt(index).text ?? "",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 16),
                           ),
