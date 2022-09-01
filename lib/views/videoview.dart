@@ -1,3 +1,4 @@
+import 'package:anim_search_bar/anim_search_bar.dart';
 import 'package:animation_search_bar/animation_search_bar.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/cupertino.dart';
@@ -6,7 +7,7 @@ import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:libretube/views/homepage.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class VideoView extends StatefulWidget {
   const VideoView({Key? key}) : super(key: key);
@@ -18,21 +19,18 @@ class VideoView extends StatefulWidget {
 class _VideoViewState extends State<VideoView> {
   late TextEditingController _seekToController;
   late TextEditingController _editingcontroller;
-  YoutubePlayerController _controller = YoutubePlayerController();
+  YoutubePlayerController _controller = YoutubePlayerController(
+    initialVideoId: VideoInfo.ID,
+  );
   late bool autoPlay;
 
   @override
   void initState() {
     _editingcontroller = TextEditingController();
     autoPlay = true;
-    _controller = YoutubePlayerController()
-      ..onInit = () {
-        if (autoPlay) {
-          _controller.loadVideoById(videoId: VideoInfo.ID, startSeconds: 30);
-        } else {
-          _controller.cueVideoById(videoId: VideoInfo.ID, startSeconds: 30);
-        }
-      };
+    _controller = YoutubePlayerController(
+      initialVideoId: VideoInfo.ID,
+    );
     super.initState();
   }
 
@@ -68,28 +66,44 @@ class _VideoViewState extends State<VideoView> {
                           offset: Offset(0, 5))
                     ]),
                     alignment: Alignment.center,
-                    child: AnimationSearchBar(
-                      isBackButtonVisible: true,
-                      previousScreen: HomePage(),
-                      backIconColor: Colors.black,
-                      centerTitle: "LibreTube",
-                      centerTitleStyle: GoogleFonts.sacramento(
-                        textStyle: Theme.of(context).textTheme.displaySmall,
-                      ),
-                      //? Search hint text
-                      hintStyle: GoogleFonts.sacramento(
-                        textStyle: Theme.of(context).textTheme.displaySmall,
-                      ),
-                      //? Search Text
-                      textStyle: GoogleFonts.sacramento(
-                        textStyle: Theme.of(context).textTheme.displaySmall,
-                      ),
-                      // onChanged: (text) {
-                      //   assignData(text);
-                      // },
-                      searchTextEditingController: _editingcontroller,
-                      horizontalPadding: 5,
-                      onChanged: (String) {},
+                    child: Row(
+                      children: <Widget>[
+                        AnimSearchBar(
+                          suffixIcon: Icon(Icons.send),
+                          prefixIcon: Icon(Icons.search_outlined),
+                          width: 400,
+                          textController: _editingcontroller,
+                          onSuffixTap: () {
+                            // setState(() {
+                            //   _updateState();
+                            // });
+                          },
+                        ),
+                        Expanded(
+                          child: Center(
+                              child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Text(
+                              "LibreTube",
+                              maxLines: 1,
+                              style: GoogleFonts.sacramento(fontSize: 30),
+                              overflow: TextOverflow.fade,
+                            ),
+                          )),
+                        ),
+                        RawMaterialButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          elevation: 2.0,
+                          fillColor: Colors.white,
+                          child: Icon(
+                            Icons.arrow_circle_right_rounded,
+                            size: 35.0,
+                          ),
+                          shape: CircleBorder(),
+                        )
+                      ],
                     ),
                   ))),
         ));
@@ -97,9 +111,11 @@ class _VideoViewState extends State<VideoView> {
 
   Widget videoAppBody() {
     return Center(
-      child: YoutubePlayerScaffold(
-        controller: _controller,
-        aspectRatio: 16 / 9,
+      child: YoutubePlayerBuilder(
+        player: YoutubePlayer(
+          controller: _controller,
+          showVideoProgressIndicator: true,
+        ),
         builder: (context, player) {
           return Scaffold(
             body: Column(
@@ -123,36 +139,36 @@ class _VideoViewState extends State<VideoView> {
                     ),
                   ),
                 ),
-                ListView.builder(
-                  scrollDirection: Axis.vertical,
-                  shrinkWrap: true,
-                  itemCount: VideoInfo?.comms?.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      child: Card(
-                        elevation: 9,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(30)),
-                        ),
-                        child: ListTile(
-                          dense: false,
-                          leading: FlutterLogo(),
-                          title: Text(
-                            VideoInfo.comms?.elementAt(index).author ?? "",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 20),
-                          ),
-                          subtitle: Text(
-                            VideoInfo.comms?.elementAt(index).text ?? "",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          trailing: Icon(Icons.arrow_forward_ios),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                // ListView.builder(
+                //   scrollDirection: Axis.vertical,
+                //   shrinkWrap: true,
+                //   itemCount: VideoInfo?.comms?.length,
+                //   itemBuilder: (context, index) {
+                //     return Container(
+                //       child: Card(
+                //         elevation: 9,
+                //         shape: RoundedRectangleBorder(
+                //           borderRadius: BorderRadius.all(Radius.circular(30)),
+                //         ),
+                //         child: ListTile(
+                //           dense: false,
+                //           leading: FlutterLogo(),
+                //           title: Text(
+                //             VideoInfo.comms?.elementAt(index).author ?? "",
+                //             style: TextStyle(
+                //                 fontWeight: FontWeight.bold, fontSize: 20),
+                //           ),
+                //           subtitle: Text(
+                //             VideoInfo.comms?.elementAt(index).text ?? "",
+                //             style: TextStyle(
+                //                 fontWeight: FontWeight.bold, fontSize: 16),
+                //           ),
+                //           trailing: Icon(Icons.arrow_forward_ios),
+                //         ),
+                //       ),
+                //     );
+                //   },
+                // ),
               ],
             ),
             bottomNavigationBar:

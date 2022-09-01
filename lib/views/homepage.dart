@@ -1,4 +1,6 @@
+import 'package:anim_search_bar/anim_search_bar.dart';
 import 'package:animation_search_bar/animation_search_bar.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +12,7 @@ import 'package:libretube/views/errorview.dart';
 import 'package:libretube/views/loadingview.dart';
 import 'package:libretube/views/videoview.dart';
 import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
+import 'package:transparent_image/transparent_image.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import '../utilities/youtube.dart';
@@ -28,6 +31,7 @@ class _HomePageState extends State<HomePage> {
   late VideoSearchList VideosSearched;
   late List<Video> VideosSearchedList;
   final ScrollController controller = ScrollController();
+  bool comingFromFetch = false;
 
   @override
   void initState() {
@@ -37,24 +41,24 @@ class _HomePageState extends State<HomePage> {
       if (controller.position.atEdge &&
           !(controller.position.pixels == 0) &&
           !HomePage.loadingState) {
-        await fetch();
+        await _fetchNewData();
         print("Load more data");
       }
     });
-
     super.initState();
   }
 
-  Future fetch() async {
+  Future _fetchNewData() async {
     HomePage.loadingState = true;
-    await appendToSearchList(VideosSearched);
+    VideosSearched = await appendToSearchList(VideosSearched);
+    VideosSearchedList = assignData();
     HomePage.loadingState = false;
+    comingFromFetch = true;
     setState(() {});
   }
 
-  Future<List<Video>> assignData(String que) async {
+  List<Video> assignData() {
     List<Video> myVideoList = [];
-    VideosSearched = await getSearch(que);
     var videoIterator = VideosSearched.iterator;
     while (videoIterator.moveNext()) {
       myVideoList.add(videoIterator.current);
@@ -63,20 +67,29 @@ class _HomePageState extends State<HomePage> {
     return myVideoList;
   }
 
-  Future<bool> _updateState() async {
+  Future<List<Video>> _updateState() async {
     try {
       HomePage.loadingState = true;
-      HomePage.searchQuery = _editingcontroller.text;
-      VideosSearched = await getSearch(HomePage.searchQuery);
-      VideosSearchedList = await assignData(HomePage.searchQuery);
-
-      setState(() {});
+      if (!comingFromFetch) {
+        HomePage.searchQuery = _editingcontroller.text ?? "";
+        VideosSearched = await getSearch(HomePage.searchQuery, context);
+        VideosSearchedList = assignData();
+      } else {
+        comingFromFetch = false;
+      }
       HomePage.loadingState = false;
-      return true;
+      return VideosSearchedList;
     } on Exception catch (e) {
       print("Error: ${e.toString()}");
-      return true;
+      return VideosSearchedList;
     }
+  }
+
+  Future<List<Video>> _refreshPage() async {
+    setState(() {
+      VideosSearchedList.length;
+    });
+    return VideosSearchedList;
   }
 
   @override
@@ -90,7 +103,7 @@ class _HomePageState extends State<HomePage> {
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
-          body: returnFutureBuilder(HomePage.searchQuery),
+          body: returnFutureBuilder(),
           appBar: PreferredSize(
               preferredSize: const Size(double.infinity, 65),
               child: SafeArea(
@@ -104,30 +117,27 @@ class _HomePageState extends State<HomePage> {
                       offset: Offset(0, 5))
                 ]),
                 alignment: Alignment.center,
-                child: AnimationSearchBar(
-                    isBackButtonVisible: true,
-                    previousScreen: HomePage(),
-                    backIconColor: Colors.black,
-                    centerTitle: "LibreTube",
-                    centerTitleStyle: GoogleFonts.sacramento(
-                      textStyle: Theme.of(context).textTheme.displaySmall,
+                child: Row(
+                  children: <Widget> [
+                    AnimSearchBar(
+                      suffixIcon: Icon(Icons.send),
+                      prefixIcon: Icon(Icons.search_outlined),
+                      width: 400,
+                      textController: _editingcontroller,
+                      onSuffixTap: () {
+                        setState(() {
+                          _updateState();
+                        });
+                      },
                     ),
-                    //? Search hint text
-                    hintStyle: GoogleFonts.sacramento(
-                      textStyle: Theme.of(context).textTheme.displaySmall,
+                    Expanded(
+                      child: Center(child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text("LibreTube", maxLines: 1, style: GoogleFonts.sacramento(fontSize: 30), overflow: TextOverflow.fade,),
+                      )),
                     ),
-                    //? Search Text
-                    textStyle: GoogleFonts.sacramento(
-                      textStyle: Theme.of(context).textTheme.displaySmall,
-                    ),
-                    onChanged: (text) async {
-                      if (text == "mamma") {
-                        HomePage.searchQuery = _editingcontroller.text;
-                        await _updateState();
-                      }
-                    },
-                    searchTextEditingController: _editingcontroller,
-                    horizontalPadding: 5),
+                  ],
+                ),
               ))),
           bottomNavigationBar: ConvexAppBar(
             items: [
@@ -144,7 +154,7 @@ class _HomePageState extends State<HomePage> {
   Widget BuildCards(BuildContext context, List<Video>? list) {
     return RefreshIndicator(
       onRefresh: () async {
-        await _updateState();
+        await _refreshPage();
       },
       child: ListView.builder(
           controller: controller,
@@ -162,25 +172,22 @@ class _HomePageState extends State<HomePage> {
                                 BorderRadius.all(Radius.circular(8.0)),
                             color: Colors.white,
                           ),
-                          child: 
-                            FadeInImage(
-  placeholder: MemoryImage(Icons.sp),
-  image: NetworkImageWithRetry(
-    list.elementAt(index).thumbnails.standardResUrl
-  ),
-  fit: BoxFit.cover,
-  fadeInDuration: Duration(milliseconds: 150)
-),
-                          // Image.network(
-                          //   list.elementAt(index).thumbnails.standardResUrl,
-                          //   height: 150.0,
-                          //   width: 100.0,
-                          //   errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace) {
-                          //     return Text('Your error widget...');
-                          //   },
-                          // ),
+                          child: CachedNetworkImage(
+                            imageUrl:
+                                list.elementAt(index).thumbnails.standardResUrl,
+                            progressIndicatorBuilder:
+                                (context, url, downloadProgress) =>
+                                    CircularProgressIndicator(
+                                        value: downloadProgress.progress),
+                            errorWidget: (context, url, error) =>
+                                Icon(Icons.error),
+                          ),
                         ),
-                        trailing: const Icon(Icons.play_arrow),
+                        trailing: Builder(builder: (context) {
+                          return const SizedBox(
+                            child: Icon(Icons.play_arrow),
+                          );
+                        }),
                         onTap: () async {
                           VideoInfo.comms =
                               await getComments(list.elementAt(index));
@@ -201,6 +208,7 @@ class _HomePageState extends State<HomePage> {
                                   list.elementAt(index).publishDate;
                               return const VideoView();
                             }),
+                             
                           );
                         }));
               }
@@ -212,9 +220,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget returnFutureBuilder(String query) {
+  Widget returnFutureBuilder() {
     return FutureBuilder<List<Video>>(
-      future: assignData(HomePage.searchQuery),
+      future: _updateState(),
       builder: (BuildContext context, AsyncSnapshot<List<Video>> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const LoadingView();
