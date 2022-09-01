@@ -29,6 +29,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+    
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -41,9 +42,14 @@ dependencies:
   google_fonts: 3.0.1
   youtube_explode_dart: ^1.10.4
   loading_animation_widget: 1.2.0+2
-  youtube_player_iframe: 3.0.4
+  youtube_player_flutter: 8.1.0
   anim_search_bar: 2.0.2
   flutter_image: 4.1.4
+  transparent_image: ^1.0.0
+  cached_network_image: 3.2.1 
+  shimmer: ^2.0.0
+  hexcolor: ^2.0.7
+
 
 
 dev_dependencies:
@@ -62,7 +68,8 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
+  assets:
+      - assets/giphy.gif
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
