@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:libretube/video/VideoView.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
-import '../views/homepage.dart';
+import '../views/HomePage.dart';
 
 Future<StreamManifest> getManifest(String vidID) async {
   HomePage.loadingState = true;
@@ -49,3 +50,4 @@ Future<VideoSearchList> appendToSearchList(VideoSearchList vs) async {
   HomePage.loadingState = false;
   return vs;
 }
+

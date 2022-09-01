@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:anim_search_bar/anim_search_bar.dart';
 import 'package:animation_search_bar/animation_search_bar.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
@@ -6,7 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:libretube/views/homepage.dart';
+import 'package:libretube/views/HomePage.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class VideoView extends StatefulWidget {
@@ -57,14 +60,16 @@ class _VideoViewState extends State<VideoView> {
                   preferredSize: const Size(double.infinity, 65),
                   child: SafeArea(
                       child: Container(
-                    decoration:
-                        const BoxDecoration(color: Colors.white, boxShadow: [
-                      BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 5,
-                          spreadRadius: 0,
-                          offset: Offset(0, 5))
-                    ]),
+                    decoration: const BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 5,
+                              spreadRadius: 0,
+                              offset: Offset(0, 5))
+                        ],
+                        borderRadius: BorderRadius.all(Radius.circular(20))),
                     alignment: Alignment.center,
                     child: Row(
                       children: <Widget>[
@@ -121,12 +126,87 @@ class _VideoViewState extends State<VideoView> {
             body: Column(
               children: [
                 player,
+                Container(
+                  decoration: const BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 5,
+                            spreadRadius: 0,
+                            offset: Offset(0, 5))
+                      ],
+                      borderRadius: BorderRadius.all(Radius.circular(20))),
+                  alignment: Alignment.center,
+                  child: Center(), // TODO: Get channel info
+                ),
+                Container(
+                  decoration: const BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 5,
+                            spreadRadius: 0,
+                            offset: Offset(0, 5))
+                      ],
+                      borderRadius: BorderRadius.all(Radius.circular(20))),
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      ButtonBar(
+                        children: [
+                          FloatingActionButton.extended(
+                            label: Text(
+                              'Download',
+                              style: GoogleFonts.dmSans(fontSize: 12),
+                            ), // <-- Text
+                            backgroundColor: Colors.black,
+                            icon: Icon(
+                              // <-- Icon
+                              Icons.download,
+                              size: 12.0,
+                            ),
+                            onPressed: () {},
+                          ),
+                          FloatingActionButton.extended(
+                            label: Text(
+                              'Save',
+                              style: GoogleFonts.dmSans(fontSize: 12),
+                            ), // <-- Text
+                            backgroundColor: Colors.black,
+                            icon: Icon(
+                              // <-- Icon
+                              Icons.save,
+                              size: 12.0,
+                            ),
+                            onPressed: () {},
+                          ),
+                          FloatingActionButton.extended(
+                            label: Text(
+                              'Download Audio',
+                              style: GoogleFonts.dmSans(fontSize: 12),
+                            ), // <-- Text
+                            backgroundColor: Colors.black,
+                            icon: Icon(
+                              // <-- Icon
+                              Icons.headphones,
+                              size: 12.0,
+                            ),
+                            onPressed: () {},
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       VideoInfo.name,
-                      style: GoogleFonts.salsa(fontWeight: FontWeight.bold),
+                      style: GoogleFonts.dmSans(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -135,10 +215,11 @@ class _VideoViewState extends State<VideoView> {
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
                       VideoInfo.description,
-                      style: GoogleFonts.salsa(),
+                      style: GoogleFonts.dmSans(),
                     ),
                   ),
                 ),
+                // TODO: Add Comments list for video
                 // ListView.builder(
                 //   scrollDirection: Axis.vertical,
                 //   shrinkWrap: true,
@@ -187,4 +268,17 @@ class _VideoViewState extends State<VideoView> {
       ),
     );
   }
+}
+
+class VideoInfo {
+  static late String name;
+  static late String ID;
+  static late String author;
+  static late List<String> comments;
+  static late String description;
+  static late DateTime? publishDate;
+  static late CommentsList? comms;
+  static late ChannelId channelID;
+  static late bool isLive;
+  static late UnmodifiableListView<String> keywords;
 }
