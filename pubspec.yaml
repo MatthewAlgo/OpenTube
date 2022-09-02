@@ -51,6 +51,7 @@ dependencies:
   hexcolor: ^2.0.7
   flutter_local_notifications: 9.9.0
   like_button: 2.0.4
+  youtube_data_api: 1.0.4
 
 
 

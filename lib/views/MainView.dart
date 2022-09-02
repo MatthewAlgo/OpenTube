@@ -15,6 +15,8 @@ import 'package:libretube/views/SubscriptionsView.dart';
 import 'package:libretube/video/VideoView.dart';
 import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
 import 'package:transparent_image/transparent_image.dart';
+import 'package:youtube_data_api/models/video_data.dart';
+import 'package:youtube_data_api/youtube_data_api.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import '../utilities/YouTube.dart';
@@ -105,6 +107,7 @@ class _MainViewState extends State<MainView> {
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
+        resizeToAvoidBottomInset: false,
         body: returnFutureBuilder(),
         appBar: PreferredSize(
             preferredSize: const Size(double.infinity, 65),
@@ -126,7 +129,7 @@ class _MainViewState extends State<MainView> {
                   AnimSearchBar(
                     suffixIcon: Icon(Icons.send),
                     prefixIcon: Icon(Icons.search_outlined),
-                    width: 400,
+                    width: MediaQuery.of(context).size.width,
                     textController: _editingcontroller,
                     onSuffixTap: () {
                       setState(() {
@@ -201,18 +204,27 @@ class _MainViewState extends State<MainView> {
                           ),
                         ),
                         trailing: Builder(builder: (context) {
-                          return const SizedBox(
-                            child: Icon(Icons.play_arrow),
+                          return Column(
+                            children: [
+                              const SizedBox(
+                                child: Icon(Icons.play_arrow),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(top: 4),
+                                child: const SizedBox(
+                                  child: Icon(Icons.bookmark),
+                                ),
+                              )
+                            ],
                           );
                         }),
                         onTap: () async {
-                          VideoInfo.comms =
-                              await getComments(list.elementAt(index));
                           // ignore: use_build_context_synchronously
-                          Navigator.push(
-                            context,
+                          Navigator.of(context, rootNavigator: true).push(
                             MaterialPageRoute(builder: (context) {
                               // Populate static video info to be passed further
+                              VideoInfo.video = list.elementAt(index);
+                              // Other elements to be easier to access
                               VideoInfo.ID =
                                   list.elementAt(index).id.toString() ?? "";
                               VideoInfo.author =
@@ -232,6 +244,7 @@ class _MainViewState extends State<MainView> {
                               VideoInfo.isLive = list.elementAt(index).isLive;
                               VideoInfo.keywords =
                                   list.elementAt(index).keywords;
+
                               return const VideoView();
                             }),
                           );

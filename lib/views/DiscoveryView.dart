@@ -49,7 +49,7 @@ class _DiscoveryViewState extends State<DiscoveryView> {
                 AnimSearchBar(
                   suffixIcon: Icon(Icons.send),
                   prefixIcon: Icon(Icons.search_outlined),
-                  width: 400,
+                  width: MediaQuery.of(context).size.width,
                   textController: _editingcontroller,
                   onSuffixTap: () {
                     setState(() {});

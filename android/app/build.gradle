@@ -51,6 +51,28 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        multiDexEnabled true
+
+        externalNativeBuild {
+        cmake {
+            cppFlags "-std=c++17"
+            abiFilters 'x86', 'armeabi-v7a', 'x86_64'
+        }
+    }
+        splits {
+    abi {
+        enable true
+        reset()
+        include 'x86', 'x86_64', 'armeabi', 'armeabi-v7a', 'mips', 'mips64', 'arm64-v8a'
+        universalApk true
+    }
+}
+
+defaultConfig {
+   ndk {
+         abiFilters 'x86', 'x86_64', 'armeabi', 'armeabi-v7a', 'mips', 'mips64', 'arm64-v8a'
+        }
+}
     }
 
     buildTypes {
@@ -69,3 +91,6 @@ flutter {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
+
+
+

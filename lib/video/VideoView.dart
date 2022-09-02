@@ -8,8 +8,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:libretube/video/SimilarVideosView.dart';
+import 'package:libretube/video/VideoInfoBottom.dart';
+import 'package:libretube/views/ErrorView.dart';
 import 'package:libretube/views/HomePage.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'package:libretube/views/LoadingView.dart';
+import 'package:youtube_data_api/models/channel.dart' as chandata;
+import 'package:youtube_data_api/models/video.dart' as viddata;
+import 'package:youtube_data_api/models/video_data.dart';
+import 'package:youtube_data_api/youtube_data_api.dart' as dapi;
+import 'package:youtube_explode_dart/youtube_explode_dart.dart' as exp;
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class VideoView extends StatefulWidget {
@@ -27,6 +35,10 @@ class _VideoViewState extends State<VideoView> {
   );
   late bool autoPlay;
 
+  // Change views in page bottom
+  int selectedpage = 0;
+  final _pageNo = [VideoInfoBottomView(), SimilarVideosView()];
+
   @override
   void initState() {
     _editingcontroller = TextEditingController();
@@ -34,6 +46,7 @@ class _VideoViewState extends State<VideoView> {
     _controller = YoutubePlayerController(
       initialVideoId: VideoInfo.ID,
     );
+
     super.initState();
   }
 
@@ -76,7 +89,7 @@ class _VideoViewState extends State<VideoView> {
                         AnimSearchBar(
                           suffixIcon: Icon(Icons.send),
                           prefixIcon: Icon(Icons.search_outlined),
-                          width: 400,
+                          width: MediaQuery.of(context).size.width,
                           textController: _editingcontroller,
                           onSuffixTap: () {
                             // setState(() {
@@ -115,170 +128,66 @@ class _VideoViewState extends State<VideoView> {
   }
 
   Widget videoAppBody() {
-    return Center(
-      child: YoutubePlayerBuilder(
-        player: YoutubePlayer(
-          controller: _controller,
-          showVideoProgressIndicator: true,
-        ),
-        builder: (context, player) {
-          return Scaffold(
-            body: Column(
-              children: [
-                player,
-                Container(
-                  decoration: const BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 5,
-                            spreadRadius: 0,
-                            offset: Offset(0, 5))
+    return FutureBuilder<VideoData?>(
+        future: fetchNetworkCall(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return Center(
+              child: YoutubePlayerBuilder(
+                player: YoutubePlayer(
+                  controller: _controller,
+                  showVideoProgressIndicator: true,
+                ),
+                builder: (context, player) {
+                  return Scaffold(
+                    body: Column(
+                      children: [
+                        player,
+                        Flexible(
+                          child: _pageNo[selectedpage],
+                        ),
                       ],
-                      borderRadius: BorderRadius.all(Radius.circular(20))),
-                  alignment: Alignment.center,
-                  child: Center(), // TODO: Get channel info
-                ),
-                Container(
-                  decoration: const BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 5,
-                            spreadRadius: 0,
-                            offset: Offset(0, 5))
-                      ],
-                      borderRadius: BorderRadius.all(Radius.circular(20))),
-                  alignment: Alignment.center,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      ButtonBar(
-                        children: [
-                          FloatingActionButton.extended(
-                            label: Text(
-                              'Download',
-                              style: GoogleFonts.dmSans(fontSize: 12),
-                            ), // <-- Text
-                            backgroundColor: Colors.black,
-                            icon: Icon(
-                              // <-- Icon
-                              Icons.download,
-                              size: 12.0,
-                            ),
-                            onPressed: () {},
-                          ),
-                          FloatingActionButton.extended(
-                            label: Text(
-                              'Save',
-                              style: GoogleFonts.dmSans(fontSize: 12),
-                            ), // <-- Text
-                            backgroundColor: Colors.black,
-                            icon: Icon(
-                              // <-- Icon
-                              Icons.save,
-                              size: 12.0,
-                            ),
-                            onPressed: () {},
-                          ),
-                          FloatingActionButton.extended(
-                            label: Text(
-                              'Download Audio',
-                              style: GoogleFonts.dmSans(fontSize: 12),
-                            ), // <-- Text
-                            backgroundColor: Colors.black,
-                            icon: Icon(
-                              // <-- Icon
-                              Icons.headphones,
-                              size: 12.0,
-                            ),
-                            onPressed: () {},
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      VideoInfo.name,
-                      style: GoogleFonts.dmSans(fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      VideoInfo.description,
-                      style: GoogleFonts.dmSans(),
-                    ),
-                  ),
-                ),
-                // TODO: Add Comments list for video
-                // ListView.builder(
-                //   scrollDirection: Axis.vertical,
-                //   shrinkWrap: true,
-                //   itemCount: VideoInfo?.comms?.length,
-                //   itemBuilder: (context, index) {
-                //     return Container(
-                //       child: Card(
-                //         elevation: 9,
-                //         shape: RoundedRectangleBorder(
-                //           borderRadius: BorderRadius.all(Radius.circular(30)),
-                //         ),
-                //         child: ListTile(
-                //           dense: false,
-                //           leading: FlutterLogo(),
-                //           title: Text(
-                //             VideoInfo.comms?.elementAt(index).author ?? "",
-                //             style: TextStyle(
-                //                 fontWeight: FontWeight.bold, fontSize: 20),
-                //           ),
-                //           subtitle: Text(
-                //             VideoInfo.comms?.elementAt(index).text ?? "",
-                //             style: TextStyle(
-                //                 fontWeight: FontWeight.bold, fontSize: 16),
-                //           ),
-                //           trailing: Icon(Icons.arrow_forward_ios),
-                //         ),
-                //       ),
-                //     );
-                //   },
-                // ),
-              ],
-            ),
-            bottomNavigationBar:
-                MediaQuery.of(context).orientation == Orientation.landscape
-                    ? null // show nothing in lanscape mode
-                    : ConvexAppBar(
-                        items: [
-                          TabItem(icon: Icons.play_arrow, title: 'Video'),
-                          TabItem(icon: Icons.message, title: 'Comments'),
-                        ],
-                        initialActiveIndex: 0, //optional, default as 0
-                        onTap: (int i) => print('click index=$i'),
-                      ),
-          );
-        },
-      ),
-    );
+                    bottomNavigationBar: MediaQuery.of(context).orientation ==
+                            Orientation.landscape
+                        ? null // show nothing in lanscape mode
+                        : ConvexAppBar(
+                            items: [
+                              TabItem(icon: Icons.play_arrow, title: 'Now Playing'),
+                              TabItem(icon: Icons.video_library_rounded, title: 'Similar Videos'),
+                            ],
+                            initialActiveIndex: selectedpage,
+                            onTap: (int index) {
+                              setState(() {
+                                selectedpage = index;
+                              });
+                            },
+                          ),
+                  );
+                },
+              ),
+            );
+          } else if (snapshot.connectionState == ConnectionState.waiting) {
+            return LoadingView();
+          } else {
+            return ErrorView();
+          }
+        });
   }
 }
 
 class VideoInfo {
+  static late exp.Video video;
   static late String name;
   static late String ID;
   static late String author;
-  static late List<String> comments;
+  static late exp.CommentsList comments;
   static late String description;
   static late DateTime? publishDate;
-  static late CommentsList? comms;
-  static late ChannelId channelID;
+  static late exp.CommentsList? comms;
+  static late exp.ChannelId channelID;
   static late bool isLive;
   static late UnmodifiableListView<String> keywords;
+  static late chandata.Channel videoChannel;
+  static late List<viddata.Video> relatedVideos;
 }

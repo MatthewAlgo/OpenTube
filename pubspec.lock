@@ -553,6 +553,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.1.0"
+  xml2json:
+    dependency: transitive
+    description:
+      name: xml2json
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "5.3.5"
+  youtube_data_api:
+    dependency: "direct main"
+    description:
+      name: youtube_data_api
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.4"
   youtube_explode_dart:
     dependency: "direct main"
     description:

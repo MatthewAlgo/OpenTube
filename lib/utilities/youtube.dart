@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:libretube/video/VideoView.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart' as exp;
 
 import '../views/HomePage.dart';
 
-Future<StreamManifest> getManifest(String vidID) async {
+Future<exp.StreamManifest> getManifest(String vidID) async {
   HomePage.loadingState = true;
-  var yt = YoutubeExplode();
+  var yt = exp.YoutubeExplode();
   var streamInfo = await yt.videos.streamsClient.getManifest('vidID');
 
   HomePage.loadingState = false;
   return streamInfo;
 }
 
-Future<VideoSearchList> getSearch(
+Future<exp.VideoSearchList> getSearch(
     String searchquery, BuildContext context) async {
   HomePage.loadingState = true;
-  var yt = YoutubeExplode();
-  late VideoSearchList search;
+  var yt = exp.YoutubeExplode();
+  late exp.VideoSearchList search;
   try {
     search = await yt.search.search(searchquery);
   } on Exception catch (e) {
@@ -28,18 +28,17 @@ Future<VideoSearchList> getSearch(
   return search;
 }
 
-Future<CommentsList?> getComments(Video? video) async {
+Future<exp.CommentsList?> getComments(exp.Video video) async {
   HomePage.loadingState = true;
-  var yt = YoutubeExplode();
-  var comments = await yt.videos.commentsClient.getComments(video!);
-
+  var yt = exp.YoutubeExplode();
+  var comments = await yt.videos.commentsClient.getComments(video);
   HomePage.loadingState = false;
   return comments;
 }
 
-Future<VideoSearchList> appendToSearchList(VideoSearchList vs) async {
+Future<exp.VideoSearchList> appendToSearchList(exp.VideoSearchList vs) async {
   HomePage.loadingState = true;
-  var yt = YoutubeExplode();
+  var yt = exp.YoutubeExplode();
   var next = await vs.nextPage();
   if (next != null) {
     for (var video in next.sublist(0)) {

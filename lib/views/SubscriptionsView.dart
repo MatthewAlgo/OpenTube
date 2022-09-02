@@ -45,11 +45,12 @@ class _SubscriptionsViewState extends State<SubscriptionsView> {
                 borderRadius: BorderRadius.all(Radius.circular(20))),
             alignment: Alignment.center,
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 AnimSearchBar(
                   suffixIcon: Icon(Icons.send),
                   prefixIcon: Icon(Icons.search_outlined),
-                  width: 400,
+                  width: MediaQuery.of(context).size.width,
                   textController: _editingcontroller,
                   onSuffixTap: () {},
                 ),
