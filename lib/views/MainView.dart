@@ -30,7 +30,8 @@ class MainView extends StatefulWidget {
   State<MainView> createState() => _MainViewState();
 }
 
-class _MainViewState extends State<MainView> {
+class _MainViewState extends State<MainView>
+    with AutomaticKeepAliveClientMixin {
   late final _editingcontroller;
   late VideoSearchList VideosSearched;
   late List<Video> VideosSearchedList;
@@ -103,7 +104,12 @@ class _MainViewState extends State<MainView> {
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
@@ -244,7 +250,6 @@ class _MainViewState extends State<MainView> {
                               VideoInfo.isLive = list.elementAt(index).isLive;
                               VideoInfo.keywords =
                                   list.elementAt(index).keywords;
-
                               return const VideoView();
                             }),
                           );

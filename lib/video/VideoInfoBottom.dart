@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter_share/flutter_share.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:libretube/views/ErrorView.dart';
 import 'package:libretube/views/LoadingView.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:youtube_data_api/models/video_data.dart';
 import 'package:youtube_data_api/youtube_data_api.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../utilities/YouTube.dart';
 import 'VideoView.dart';
@@ -18,9 +21,14 @@ class VideoInfoBottomView extends StatefulWidget {
   State<VideoInfoBottomView> createState() => _VideoInfoBottomViewState();
 }
 
-class _VideoInfoBottomViewState extends State<VideoInfoBottomView> {
+class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return FutureBuilder<VideoData?>(
         future: fetchNetworkCall(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -28,6 +36,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView> {
             return Scaffold(
               body: Container(
                 child: SingleChildScrollView(
+                  physics: ScrollPhysics(),
                   child: Column(
                     children: [
                       Container(
@@ -53,8 +62,9 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView> {
                                     padding: const EdgeInsets.all(4.0),
                                     child: Icon(Icons.thumb_up_alt_rounded),
                                   ), // <-- Icon
-                                  Text(snapshot.data.video.likeCount,
-                                      style: GoogleFonts.dmSans()), // <-- Text
+                                  Text(snapshot.data.video.likeCount ?? "",
+                                      style: GoogleFonts.dmSans(
+                                          fontSize: 12)), // <-- Text
                                 ],
                               ),
                             ),
@@ -65,8 +75,9 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView> {
                                     padding: const EdgeInsets.all(4.0),
                                     child: Icon(Icons.play_circle),
                                   ), // <-- Icon
-                                  Text(snapshot.data.video.viewCount,
-                                      style: GoogleFonts.dmSans()), // <-- Text
+                                  Text(snapshot.data.video.viewCount ?? "",
+                                      style: GoogleFonts.dmSans(
+                                          fontSize: 12)), // <-- Text
                                 ],
                               ),
                             ),
@@ -77,9 +88,38 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView> {
                                     padding: const EdgeInsets.all(4.0),
                                     child: Icon(Icons.publish),
                                   ), // <-- Icon
-                                  Text(snapshot.data.video.date,
-                                      style: GoogleFonts.dmSans()), // <-- Text
+                                  Text(snapshot.data.video.date ?? "",
+                                      style: GoogleFonts.dmSans(
+                                          fontSize: 12)), // <-- Text
                                 ],
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () async {
+                                // Define the box for the share item
+                                final box =
+                                    context.findRenderObject() as RenderBox?;
+                                await Share.share(
+                                  "https://www.youtube.com/watch?v=${snapshot.data.video.videoId}",
+                                  subject:
+                                      "https://www.youtube.com/watch?v=${snapshot.data.video.videoId}",
+                                  sharePositionOrigin:
+                                      box!.localToGlobal(Offset.zero) &
+                                          box.size,
+                                );
+                              },
+                              child: SizedBox(
+                                child: Column(
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Icon(Icons.share),
+                                    ), // <-- Icon
+                                    Text("Share",
+                                        style: GoogleFonts.dmSans(
+                                            fontSize: 12)), // <-- Text
+                                  ],
+                                ),
                               ),
                             ),
                           ],
@@ -106,7 +146,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView> {
                               children: [
                                 FloatingActionButton.extended(
                                   label: Text(
-                                    'Download',
+                                    'Get Video',
                                     style: GoogleFonts.dmSans(fontSize: 12),
                                   ), // <-- Text
                                   backgroundColor: Colors.black,
@@ -132,7 +172,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView> {
                                 ),
                                 FloatingActionButton.extended(
                                   label: Text(
-                                    'Download Audio',
+                                    'Get Audio',
                                     style: GoogleFonts.dmSans(fontSize: 12),
                                   ), // <-- Text
                                   backgroundColor: Colors.black,
@@ -181,8 +221,8 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView> {
                                         snapshot.data.video.channelName
                                                 ?.toString() ??
                                             "",
-                                        style:
-                                            GoogleFonts.dmSans(fontSize: 20)),
+                                        style: GoogleFonts.dmSans(
+                                            fontWeight: FontWeight.bold)),
                                     Text(
                                         '${snapshot.data.video?.subscribeCount ?? ""}',
                                         style: GoogleFonts.dmSans()),
@@ -253,9 +293,11 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView> {
                           ),
                         ),
                       ),
+
                       // TODO: Add comments for list video
                       // ListView.builder(
                       //   scrollDirection: Axis.vertical,
+                      //   physics: NeverScrollableScrollPhysics(),
                       //   shrinkWrap: true,
                       //   itemCount: VideoInfo?.comms?.length,
                       //   itemBuilder: (context, index) {
@@ -305,13 +347,25 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView> {
 Future<VideoData?> fetchNetworkCall() async {
   YoutubeDataApi youtubeDataApi = YoutubeDataApi(); // To get channel data
   var YtExplode = YoutubeExplode();
+  // We get the list of comments from the youtube server
   var VideoComments =
       await YtExplode.videos.comments.getComments(VideoInfo.video);
-  VideoData? videoData = await youtubeDataApi.fetchVideoData(VideoInfo.ID);
-  if (videoData != null) {
-    VideoInfo.relatedVideos =
-        videoData.videosList; // Also fill the related videos
+  print("VideoComments: ${VideoComments.toString()}");
+
+  if (VideoInfo != null) {
+    // We assign the data to the static variable
+    VideoInfo.comms = VideoComments;
+
+    // We call the youtubeDataApi on the same video
+    VideoData? videoData = await youtubeDataApi
+        .fetchVideoData(VideoInfo.video.id.toString() ?? "");
+    if (videoData != null) {
+      // And get the list of similar videos
+      VideoInfo.relatedVideos =
+          videoData.videosList; // Also fill the related videos
+    }
+    return videoData;
+  } else {
+    throw Exception("VideoInfo is null");
   }
-  print(VideoComments?.toList().toString());
-  return videoData;
 }

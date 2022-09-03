@@ -27,13 +27,17 @@ class VideoView extends StatefulWidget {
   State<VideoView> createState() => _VideoViewState();
 }
 
-class _VideoViewState extends State<VideoView> {
+class _VideoViewState extends State<VideoView>
+    with AutomaticKeepAliveClientMixin {
   late TextEditingController _seekToController;
   late TextEditingController _editingcontroller;
   YoutubePlayerController _controller = YoutubePlayerController(
     initialVideoId: VideoInfo.ID,
   );
   late bool autoPlay;
+
+  @override
+  bool get wantKeepAlive => true;
 
   // Change views in page bottom
   int selectedpage = 0;
@@ -63,6 +67,7 @@ class _VideoViewState extends State<VideoView> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return MaterialApp(
         theme: ThemeData(useMaterial3: true),
         home: Scaffold(
@@ -128,51 +133,47 @@ class _VideoViewState extends State<VideoView> {
   }
 
   Widget videoAppBody() {
-    return FutureBuilder<VideoData?>(
-        future: fetchNetworkCall(),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return Center(
-              child: YoutubePlayerBuilder(
-                player: YoutubePlayer(
-                  controller: _controller,
-                  showVideoProgressIndicator: true,
+    return YoutubePlayerBuilder(
+      player: YoutubePlayer(
+        controller: _controller,
+        showVideoProgressIndicator: true,
+      ),
+      builder: (context, player) {
+        return Scaffold(
+          body: Column(
+            children: [
+              player,
+              Flexible(
+                child: IndexedStack(
+                  children: <Widget>[
+                    VideoInfoBottomView(),
+                    SimilarVideosView(),
+                  ],
+                  index: selectedpage,
                 ),
-                builder: (context, player) {
-                  return Scaffold(
-                    body: Column(
-                      children: [
-                        player,
-                        Flexible(
-                          child: _pageNo[selectedpage],
-                        ),
-                      ],
-                    ),
-                    bottomNavigationBar: MediaQuery.of(context).orientation ==
-                            Orientation.landscape
-                        ? null // show nothing in lanscape mode
-                        : ConvexAppBar(
-                            items: [
-                              TabItem(icon: Icons.play_arrow, title: 'Now Playing'),
-                              TabItem(icon: Icons.video_library_rounded, title: 'Similar Videos'),
-                            ],
-                            initialActiveIndex: selectedpage,
-                            onTap: (int index) {
-                              setState(() {
-                                selectedpage = index;
-                              });
-                            },
-                          ),
-                  );
-                },
               ),
-            );
-          } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return LoadingView();
-          } else {
-            return ErrorView();
-          }
-        });
+            ],
+          ),
+          bottomNavigationBar:
+              MediaQuery.of(context).orientation == Orientation.landscape
+                  ? null // show nothing in lanscape mode
+                  : ConvexAppBar(
+                      items: [
+                        TabItem(icon: Icons.play_arrow, title: 'Now Playing'),
+                        TabItem(
+                            icon: Icons.video_library_rounded,
+                            title: 'Similar Videos'),
+                      ],
+                      initialActiveIndex: selectedpage,
+                      onTap: (int index) {
+                        setState(() {
+                          selectedpage = index;
+                        });
+                      },
+                    ),
+        );
+      },
+    );
   }
 }
 

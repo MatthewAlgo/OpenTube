@@ -38,7 +38,12 @@ class _HomePageState extends State<HomePage> {
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
-          body: _pageNo[selectedpage],
+          body: IndexedStack(
+            children: <Widget>[
+             MainView(), DiscoveryView(), SubscriptionsView()
+            ],
+            index: selectedpage,
+          ),
           bottomNavigationBar: ConvexAppBar(
             items: [
               TabItem(icon: Icons.home, title: 'Home'),
