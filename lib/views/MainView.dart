@@ -8,7 +8,7 @@ import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_image/network.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:libretube/views/DiscoveryView.dart';
+import 'package:libretube/views/TrendingView.dart';
 import 'package:libretube/views/ErrorView.dart';
 import 'package:libretube/views/LoadingView.dart';
 import 'package:libretube/views/SubscriptionsView.dart';
@@ -16,8 +16,9 @@ import 'package:libretube/video/VideoView.dart';
 import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:youtube_data_api/models/video_data.dart';
-import 'package:youtube_data_api/youtube_data_api.dart';
+import 'package:youtube_data_api/youtube_data_api.dart' as dataapi;
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'package:youtube_data_api/models/video.dart' as vid;
 
 import '../utilities/YouTube.dart';
 
@@ -73,12 +74,23 @@ class _MainViewState extends State<MainView>
   }
 
   Future<List<Video>> _updateState() async {
+    // Function used to fill search and user interaction buffers
     try {
       MainView.loadingState = true;
       if (!comingFromFetch) {
         MainView.searchQuery = _editingcontroller.text ?? "";
         VideosSearched = await getSearch(MainView.searchQuery, context);
         VideosSearchedList = assignData();
+
+        dataapi.YoutubeDataApi youtubeDataApi = dataapi.YoutubeDataApi();
+        List<vid.Video> trendingMusicVideos =
+            await youtubeDataApi.fetchTrendingMusic();
+        List<vid.Video> trendingGamingVideos =
+            await youtubeDataApi.fetchTrendingGaming();
+        List<vid.Video> trendingMoviesVideos =
+            await youtubeDataApi.fetchTrendingMovies();
+
+        TrendingView.videoListDiscovery = trendingMusicVideos; // Assign the variables
       } else {
         comingFromFetch = false;
       }

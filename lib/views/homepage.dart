@@ -8,7 +8,8 @@ import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_image/network.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:libretube/views/DiscoveryView.dart';
+import 'package:libretube/views/DiscoverView.dart';
+import 'package:libretube/views/TrendingView.dart';
 import 'package:libretube/views/ErrorView.dart';
 import 'package:libretube/views/LoadingView.dart';
 import 'package:libretube/views/MainView.dart';
@@ -31,7 +32,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int selectedpage = 0;
-  final _pageNo = [MainView(), DiscoveryView(), SubscriptionsView()];
+  final _pageNo = [MainView(), DiscoverView(), SubscriptionsView()];
 
   @override
   Widget build(BuildContext context) {
@@ -40,14 +41,15 @@ class _HomePageState extends State<HomePage> {
       home: Scaffold(
           body: IndexedStack(
             children: <Widget>[
-             MainView(), DiscoveryView(), SubscriptionsView()
+             MainView(), TrendingView(), DiscoverView(), SubscriptionsView()
             ],
             index: selectedpage,
           ),
           bottomNavigationBar: ConvexAppBar(
             items: [
               TabItem(icon: Icons.home, title: 'Home'),
-              TabItem(icon: Icons.map, title: 'Discovery'),
+              TabItem(icon: Icons.trending_up_rounded, title: 'Trending'),
+              TabItem(icon: Icons.map, title: 'Discover'),
               TabItem(icon: Icons.subscriptions, title: 'Subscriptions'),
             ],
             initialActiveIndex: selectedpage,
