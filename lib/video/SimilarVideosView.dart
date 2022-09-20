@@ -37,7 +37,7 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
                 ),
                 leading: CachedNetworkImage(
                   imageUrl: VideoInfo.relatedVideos
-                          ?.elementAt(index)!
+                          .elementAt(index)
                           .thumbnails
                           ?.elementAt(0)
                           .url ??
@@ -50,7 +50,7 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
                 onTap: (() async {
                   var yt = YoutubeExplode();
                   var video = await yt.videos.get(VideoInfo.relatedVideos
-                          ?.elementAt(index)!
+                          .elementAt(index)
                           .videoId);
                   // Navigator.of(context).pop();
                   // ignore: use_build_context_synchronously

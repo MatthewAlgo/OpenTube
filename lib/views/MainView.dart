@@ -21,18 +21,20 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:youtube_data_api/models/video.dart' as vid;
 
 import '../utilities/YouTube.dart';
+import '../video/VideoInfoBottom.dart';
 
 class MainView extends StatefulWidget {
   const MainView({Key? key}) : super(key: key);
   static String searchQuery = "";
   static bool loadingState = false; // Acts like a pseudo-mutex
+  static int init_counter_from_rebuild = 0;
 
   @override
   State<MainView> createState() => _MainViewState();
 }
 
 class _MainViewState extends State<MainView>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin<MainView> {
   late final _editingcontroller;
   late VideoSearchList VideosSearched;
   late List<Video> VideosSearchedList;
@@ -41,6 +43,7 @@ class _MainViewState extends State<MainView>
 
   @override
   void initState() {
+    super.initState();
     var focusNode = FocusNode();
     _editingcontroller = TextEditingController();
     controller.addListener(() async {
@@ -51,8 +54,10 @@ class _MainViewState extends State<MainView>
         print("Load more data");
       }
     });
-    super.initState();
   }
+
+  @override
+  bool get wantKeepAlive => true;
 
   Future _fetchNewData() async {
     MainView.loadingState = true;
@@ -75,6 +80,7 @@ class _MainViewState extends State<MainView>
 
   Future<List<Video>> _updateState() async {
     // Function used to fill search and user interaction buffers
+
     try {
       MainView.loadingState = true;
       if (!comingFromFetch) {
@@ -90,7 +96,8 @@ class _MainViewState extends State<MainView>
         List<vid.Video> trendingMoviesVideos =
             await youtubeDataApi.fetchTrendingMovies();
 
-        TrendingView.videoListDiscovery = trendingMusicVideos; // Assign the variables
+        TrendingView.videoListDiscovery =
+            trendingMusicVideos; // Assign the variables
       } else {
         comingFromFetch = false;
       }
@@ -104,6 +111,7 @@ class _MainViewState extends State<MainView>
 
   Future<List<Video>> _refreshPage() async {
     setState(() {
+      MainView.init_counter_from_rebuild = 0;
       VideosSearchedList.length;
     });
     return VideosSearchedList;
@@ -116,9 +124,6 @@ class _MainViewState extends State<MainView>
   }
 
   @override
-  bool get wantKeepAlive => true;
-
-  @override
   Widget build(BuildContext context) {
     super.build(context);
 
@@ -126,7 +131,7 @@ class _MainViewState extends State<MainView>
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
         resizeToAvoidBottomInset: false,
-        body: returnFutureBuilder(),
+        body: returnFutureBuilder(), // Temporary
         appBar: PreferredSize(
             preferredSize: const Size(double.infinity, 65),
             child: SafeArea(
@@ -262,6 +267,7 @@ class _MainViewState extends State<MainView>
                               VideoInfo.isLive = list.elementAt(index).isLive;
                               VideoInfo.keywords =
                                   list.elementAt(index).keywords;
+                              VideoInfoBottomView.NumberOfCallsFromTabChange = 0;
                               return const VideoView();
                             }),
                           );
@@ -276,23 +282,28 @@ class _MainViewState extends State<MainView>
   }
 
   Widget returnFutureBuilder() {
-    return FutureBuilder<List<Video>>(
-      future: _updateState(),
-      builder: (BuildContext context, AsyncSnapshot<List<Video>> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const LoadingView();
-        } else if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.hasError) {
-            return const ErrorView();
-          } else if (snapshot.hasData) {
-            return BuildCards(context, snapshot.data);
+    MainView.init_counter_from_rebuild++;
+    if (MainView.init_counter_from_rebuild == 1) {
+      return FutureBuilder<List<Video>>(
+        future: _updateState(),
+        builder: (BuildContext context, AsyncSnapshot<List<Video>> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const LoadingView();
+          } else if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError) {
+              return const ErrorView();
+            } else if (snapshot.hasData) {
+              return BuildCards(context, snapshot.data);
+            } else {
+              return BuildCards(context, snapshot.data);
+            }
           } else {
-            return BuildCards(context, snapshot.data);
+            return Text('State: ${snapshot.connectionState}');
           }
-        } else {
-          return Text('State: ${snapshot.connectionState}');
-        }
-      },
-    );
+        },
+      );
+    } else {
+      return BuildCards(context, VideosSearchedList);
+    }
   }
 }

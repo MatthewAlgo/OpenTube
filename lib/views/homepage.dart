@@ -30,20 +30,35 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with AutomaticKeepAliveClientMixin {
   int selectedpage = 0;
-  final _pageNo = [MainView(), DiscoverView(), SubscriptionsView()];
+  PageController _pageController = PageController();
+
+  @override
+  void initState() {
+    print("From PageOne - This will only print once");
+    _pageController = PageController(initialPage: 0, keepPage: true);
+    super.initState();
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
-          body: IndexedStack(
+          body: PageView(
+            controller: _pageController,
             children: <Widget>[
-             MainView(), TrendingView(), DiscoverView(), SubscriptionsView()
+              MainView(),
+              TrendingView(),
+              DiscoverView(),
+              SubscriptionsView()
             ],
-            index: selectedpage,
           ),
           bottomNavigationBar: ConvexAppBar(
             items: [
@@ -55,11 +70,10 @@ class _HomePageState extends State<HomePage> {
             initialActiveIndex: selectedpage,
             onTap: (int index) {
               setState(() {
-                selectedpage = index;
+                _pageController.jumpToPage(index);
               });
             },
           )),
     );
   }
 }
-

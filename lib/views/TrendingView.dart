@@ -185,6 +185,8 @@ class _TrendingViewState extends State<TrendingView> {
                             }),
                           );
                         }));
+              }else{
+                // Load more items
               }
             }
             return const Padding(
