@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:libretube/video/VideoInfoBottom.dart';
 import 'package:libretube/video/VideoView.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
@@ -49,12 +50,11 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
                 ),
                 onTap: (() async {
                   var yt = YoutubeExplode();
-                  var video = await yt.videos.get(VideoInfo.relatedVideos
-                          .elementAt(index)
-                          .videoId);
+                  var video = await yt.videos
+                      .get(VideoInfo.relatedVideos.elementAt(index).videoId);
                   // Navigator.of(context).pop();
                   // ignore: use_build_context_synchronously
-                  Navigator.of(context, rootNavigator: true).pushReplacement (
+                  Navigator.of(context, rootNavigator: true).pushReplacement(
                     MaterialPageRoute(builder: (context) {
                       // Populate static video info to be passed further
                       VideoInfo.video = video;
@@ -62,13 +62,14 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
                       VideoInfo.ID = video.id.toString() ?? "";
                       VideoInfo.author = video.author ?? "";
                       VideoInfo.description =
-                          video.description.characters.string ??
-                              "";
+                          video.description.characters.string ?? "";
                       VideoInfo.name = video.title ?? "";
                       VideoInfo.publishDate = video.publishDate;
                       VideoInfo.channelID = video.channelId;
                       VideoInfo.isLive = video.isLive;
                       VideoInfo.keywords = video.keywords;
+
+                      VideoInfoBottomView.NumberOfCallsFromTabChange = 0;
 
                       return const VideoView();
                     }),

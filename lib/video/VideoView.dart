@@ -50,7 +50,6 @@ class _VideoViewState extends State<VideoView>
     _controller = YoutubePlayerController(
       initialVideoId: VideoInfo.ID,
     );
-
     super.initState();
   }
 

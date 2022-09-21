@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:libretube/video/VideoInfoBottom.dart';
 import 'package:youtube_data_api/models/video.dart' as vid;
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
@@ -163,29 +164,24 @@ class _TrendingViewState extends State<TrendingView> {
                               // Populate static video info to be passed further
                               VideoInfo.video = video;
                               // Other elements to be easier to access
-                              VideoInfo.ID =
-                                  video.id.toString() ?? "";
-                              VideoInfo.author =
-                                  video.author ?? "";
-                              VideoInfo.description = video
-                                      .description
-                                      .characters
-                                      .string ??
-                                  "";
-                              VideoInfo.name =
-                                  video.title ?? "";
-                              VideoInfo.publishDate =
-                                  video.publishDate;
-                              VideoInfo.channelID =
-                                  video.channelId;
+                              VideoInfo.ID = video.id.toString() ?? "";
+                              VideoInfo.author = video.author ?? "";
+                              VideoInfo.description =
+                                  video.description.characters.string ?? "";
+                              VideoInfo.name = video.title ?? "";
+                              VideoInfo.publishDate = video.publishDate;
+                              VideoInfo.channelID = video.channelId;
                               VideoInfo.isLive = video.isLive;
-                              VideoInfo.keywords =
-                                  video.keywords;
+                              VideoInfo.keywords = video.keywords;
+
+                              VideoInfoBottomView.NumberOfCallsFromTabChange =
+                                  0;
+                                  
                               return const VideoView();
                             }),
                           );
                         }));
-              }else{
+              } else {
                 // Load more items
               }
             }

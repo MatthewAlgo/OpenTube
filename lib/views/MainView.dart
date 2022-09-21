@@ -2,6 +2,7 @@ import 'package:anim_search_bar/anim_search_bar.dart';
 import 'package:animation_search_bar/animation_search_bar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/src/foundation/key.dart';
@@ -29,6 +30,8 @@ class MainView extends StatefulWidget {
   static bool loadingState = false; // Acts like a pseudo-mutex
   static int init_counter_from_rebuild = 0;
 
+  static ValueNotifier<bool> wannaRebuild = ValueNotifier(false);
+
   @override
   State<MainView> createState() => _MainViewState();
 }
@@ -39,13 +42,14 @@ class _MainViewState extends State<MainView>
   late VideoSearchList VideosSearched;
   late List<Video> VideosSearchedList;
   final ScrollController controller = ScrollController();
-  bool comingFromFetch = false;
+  static bool comingFromFetch = false;
 
   @override
   void initState() {
     super.initState();
     var focusNode = FocusNode();
     _editingcontroller = TextEditingController();
+
     controller.addListener(() async {
       if (controller.position.atEdge &&
           !(controller.position.pixels == 0) &&
@@ -110,9 +114,13 @@ class _MainViewState extends State<MainView>
   }
 
   Future<List<Video>> _refreshPage() async {
-    setState(() {
-      MainView.init_counter_from_rebuild = 0;
-      VideosSearchedList.length;
+    // Rebuild the widget
+    MainView.wannaRebuild.value = true;
+    MainView.wannaRebuild.value = false;
+    MainView.init_counter_from_rebuild = 0;
+
+    setState(() async {
+      await _updateState();
     });
     return VideosSearchedList;
   }
@@ -131,7 +139,12 @@ class _MainViewState extends State<MainView>
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
         resizeToAvoidBottomInset: false,
-        body: returnFutureBuilder(), // Temporary
+        body: ValueListenableBuilder<bool>(
+          builder: (BuildContext context, bool value, Widget? child) {
+            return returnFutureBuilder();
+          },
+          valueListenable: MainView.wannaRebuild,
+        ),
         appBar: PreferredSize(
             preferredSize: const Size(double.infinity, 65),
             child: SafeArea(
@@ -154,9 +167,10 @@ class _MainViewState extends State<MainView>
                     prefixIcon: Icon(Icons.search_outlined),
                     width: MediaQuery.of(context).size.width,
                     textController: _editingcontroller,
+                    closeSearchOnSuffixTap: true,
                     onSuffixTap: () {
-                      setState(() {
-                        _updateState();
+                      setState(() async {
+                        await _refreshPage();
                       });
                     },
                   ),
@@ -267,7 +281,10 @@ class _MainViewState extends State<MainView>
                               VideoInfo.isLive = list.elementAt(index).isLive;
                               VideoInfo.keywords =
                                   list.elementAt(index).keywords;
-                              VideoInfoBottomView.NumberOfCallsFromTabChange = 0;
+
+                                  
+                              VideoInfoBottomView.NumberOfCallsFromTabChange =
+                                  0;
                               return const VideoView();
                             }),
                           );

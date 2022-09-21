@@ -17,7 +17,7 @@ import 'VideoView.dart';
 class VideoInfoBottomView extends StatefulWidget {
   const VideoInfoBottomView({Key? key}) : super(key: key);
   static int NumberOfCallsFromTabChange = 0;
-  static late VideoData? PreservedVideoDataState;
+  static late VideoData PreservedVideoDataState;
 
   @override
   State<VideoInfoBottomView> createState() => _VideoInfoBottomViewState();
@@ -30,9 +30,8 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+    // super.build(context);
     VideoInfoBottomView.NumberOfCallsFromTabChange++;
-
     if (VideoInfoBottomView.NumberOfCallsFromTabChange == 1) {
       return FutureBuilder<VideoData?>(
           future: fetchNetworkCall(),
@@ -64,15 +63,12 @@ Future<VideoData?> fetchNetworkCall() async {
     VideoInfo.comms = VideoComments;
 
     // We call the youtubeDataApi on the same video
-    VideoInfoBottomView.PreservedVideoDataState = await youtubeDataApi
-        .fetchVideoData(VideoInfo.video.id.toString() ?? "");
+    VideoInfoBottomView.PreservedVideoDataState = (await youtubeDataApi.fetchVideoData(VideoInfo.ID.toString()))!;
     if (VideoInfoBottomView.PreservedVideoDataState != null) {
       // And get the list of similar videos
       VideoInfo.relatedVideos =
           VideoInfoBottomView.PreservedVideoDataState!.videosList; // Also fill the related videos
     }
-    VideoInfoBottomView.PreservedVideoDataState =
-        VideoInfoBottomView.PreservedVideoDataState!; // We fill the static variable
     return VideoInfoBottomView.PreservedVideoDataState;
   } else {
     throw Exception("VideoInfo is null");

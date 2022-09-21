@@ -16,25 +16,23 @@ class _ErrorViewState extends State<ErrorView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Container(  
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text("Error", style: GoogleFonts.sacramento(fontSize: 30)),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Error", style: GoogleFonts.sacramento(fontSize: 30)),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: LoadingAnimationWidget.fallingDot(
+                size: 50,
+                color: Colors.red,
               ),
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: LoadingAnimationWidget.fallingDot(
-                  size: 50,
-                  color: Colors.red,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
