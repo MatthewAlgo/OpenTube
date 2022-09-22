@@ -12,7 +12,8 @@ import '../video/VideoView.dart';
 
 class TrendingView extends StatefulWidget {
   const TrendingView({Key? key}) : super(key: key);
-  static late List<vid.Video> videoListDiscovery;
+  static late List<vid.Video> videoListTrending;
+  static late List<Video> videoListTrendingYTExplode;
 
   @override
   State<TrendingView> createState() => _TrendingViewState();
@@ -91,15 +92,15 @@ class _TrendingViewState extends State<TrendingView> {
             ),
           ))),
       backgroundColor: Colors.greenAccent,
-      body: BuildCards(context, TrendingView.videoListDiscovery),
+      body: BuildCards(context, TrendingView.videoListTrending),
     );
   }
 
   Future<List<vid.Video>> _refreshPage() async {
     setState(() {
-      TrendingView.videoListDiscovery.length;
+      TrendingView.videoListTrending.length;
     });
-    return TrendingView.videoListDiscovery;
+    return TrendingView.videoListTrending;
   }
 
   Widget BuildCards(BuildContext context, List<vid.Video>? list) {
@@ -118,6 +119,9 @@ class _TrendingViewState extends State<TrendingView> {
                         title: Text(list.elementAt(index).title.toString(),
                             style: GoogleFonts.dmSans(
                                 fontWeight: FontWeight.bold)),
+                        // subtitle: Text(TrendingView.videoListTrendingYTExplode.elementAt(index).description.toString(),
+                        //     style: GoogleFonts.dmSans(
+                        //         fontWeight: FontWeight.bold)),
                         leading: Container(
                           decoration: BoxDecoration(
                             borderRadius:
@@ -158,6 +162,9 @@ class _TrendingViewState extends State<TrendingView> {
                           YoutubeExplode yt = YoutubeExplode();
                           var video = await yt.videos.get(
                               'https://youtube.com/watch?v=${list.elementAt(index).videoId}');
+                          var comments =
+                              await yt.videos.commentsClient.getComments(video);
+
                           // ignore: use_build_context_synchronously
                           Navigator.of(context, rootNavigator: true).push(
                             MaterialPageRoute(builder: (context) {
@@ -173,9 +180,11 @@ class _TrendingViewState extends State<TrendingView> {
                               VideoInfo.channelID = video.channelId;
                               VideoInfo.isLive = video.isLive;
                               VideoInfo.keywords = video.keywords;
+                              VideoInfo.comments = comments!;
 
-                              VideoInfoBottomView.NumberOfCallsFromTabChange =0;
-                                  
+                              VideoInfoBottomView.NumberOfCallsFromTabChange =
+                                  0;
+
                               return const VideoView();
                             }),
                           );

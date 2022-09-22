@@ -23,6 +23,7 @@ import 'package:youtube_data_api/models/video.dart' as vid;
 
 import '../utilities/YouTube.dart';
 import '../video/VideoInfoBottom.dart';
+import 'NoResultsView.dart';
 
 class MainView extends StatefulWidget {
   const MainView({Key? key}) : super(key: key);
@@ -84,6 +85,8 @@ class _MainViewState extends State<MainView>
 
   Future<List<Video>> _updateState() async {
     // Function used to fill search and user interaction buffers
+    YoutubeExplode ytExplode =
+        YoutubeExplode(); // Used to transfer video id data from one API to another
 
     try {
       MainView.loadingState = true;
@@ -100,8 +103,25 @@ class _MainViewState extends State<MainView>
         List<vid.Video> trendingMoviesVideos =
             await youtubeDataApi.fetchTrendingMovies();
 
-        TrendingView.videoListDiscovery =
+        TrendingView.videoListTrending =
             trendingMusicVideos; // Assign the variables
+        for (int i = 0; i < trendingGamingVideos.length; ++i) {
+          TrendingView.videoListTrending.add(trendingGamingVideos.elementAt(i));
+        }
+        for (int i = 0; i < trendingMoviesVideos.length; ++i) {
+          TrendingView.videoListTrending.add(trendingMoviesVideos.elementAt(i));
+        }
+        TrendingView.videoListTrending
+            .shuffle(); // Make the list of elements and mix the categories -> for now
+
+        // Update the YtExplode list
+        for (int i = 0; i < TrendingView.videoListTrending.length; ++i) {
+          Video videoIDAtI = await ytExplode.videos.get(
+              TrendingView.videoListTrending.elementAt(i).videoId.toString());
+          print(videoIDAtI.id.toString());
+
+          TrendingView.videoListTrendingYTExplode.add(videoIDAtI);
+        }
       } else {
         comingFromFetch = false;
       }
@@ -263,6 +283,8 @@ class _MainViewState extends State<MainView>
                           Video video = await yt.videos.get(
                               'https://youtube.com/watch?v=${list.elementAt(index).id}');
                           print("Video ID pressed on: ${video.id.toString()}");
+                          var comments =
+                              await yt.videos.commentsClient.getComments(video);
 
                           // ignore: use_build_context_synchronously
                           Navigator.of(context, rootNavigator: true).push(
@@ -279,9 +301,9 @@ class _MainViewState extends State<MainView>
                               VideoInfo.channelID = video.channelId;
                               VideoInfo.isLive = video.isLive;
                               VideoInfo.keywords = video.keywords;
+                              VideoInfo.comments = comments!;
 
-                              VideoInfoBottomView.NumberOfCallsFromTabChange =
-                                  0;
+                              VideoInfoBottomView.NumberOfCallsFromTabChange = 0;
 
                               return const VideoView();
                             }),
@@ -307,6 +329,8 @@ class _MainViewState extends State<MainView>
           } else if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasError) {
               return const ErrorView();
+            } else if (!snapshot.hasError && snapshot.data?.length == 0) {
+              return const NoResultsView();
             } else if (snapshot.hasData) {
               return BuildCards(context, snapshot.data);
             } else {

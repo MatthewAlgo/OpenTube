@@ -52,6 +52,8 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
                   var yt = YoutubeExplode();
                   var video = await yt.videos
                       .get(VideoInfo.relatedVideos.elementAt(index).videoId);
+                  var comments =
+                      await yt.videos.commentsClient.getComments(video);
                   // Navigator.of(context).pop();
                   // ignore: use_build_context_synchronously
                   Navigator.of(context, rootNavigator: true).pushReplacement(
@@ -68,6 +70,7 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
                       VideoInfo.channelID = video.channelId;
                       VideoInfo.isLive = video.isLive;
                       VideoInfo.keywords = video.keywords;
+                      VideoInfo.comments = comments!;
 
                       VideoInfoBottomView.NumberOfCallsFromTabChange = 0;
 

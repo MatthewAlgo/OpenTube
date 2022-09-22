@@ -9,6 +9,7 @@ import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:libretube/video/SimilarVideosView.dart';
+import 'package:libretube/video/VideoComments.dart';
 import 'package:libretube/video/VideoInfoBottom.dart';
 import 'package:libretube/views/ErrorView.dart';
 import 'package:libretube/views/HomePage.dart';
@@ -41,7 +42,6 @@ class _VideoViewState extends State<VideoView>
 
   // Change views in page bottom
   int selectedpage = 0;
-  final _pageNo = [VideoInfoBottomView(), SimilarVideosView()];
 
   @override
   void initState() {
@@ -146,7 +146,8 @@ class _VideoViewState extends State<VideoView>
                 child: IndexedStack(
                   children: <Widget>[
                     VideoInfoBottomView(),
-                    SimilarVideosView(),
+                    VideoCommentsView(),
+                    SimilarVideosView(),                    
                   ],
                   index: selectedpage,
                 ),
@@ -159,6 +160,9 @@ class _VideoViewState extends State<VideoView>
                   : ConvexAppBar(
                       items: [
                         TabItem(icon: Icons.play_arrow, title: 'Now Playing'),
+                        TabItem(
+                            icon: Icons.comment,
+                            title: 'Comments'),
                         TabItem(
                             icon: Icons.video_library_rounded,
                             title: 'Similar Videos'),

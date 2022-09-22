@@ -4,14 +4,14 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
-class ErrorView extends StatefulWidget {
-  const ErrorView({Key? key}) : super(key: key);
+class NoResultsView extends StatefulWidget {
+  const NoResultsView({Key? key}) : super(key: key);
 
   @override
-  State<ErrorView> createState() => _ErrorViewState();
+  State<NoResultsView> createState() => _NoResultsViewState();
 }
 
-class _ErrorViewState extends State<ErrorView> {
+class _NoResultsViewState extends State<NoResultsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,11 +24,11 @@ class _ErrorViewState extends State<ErrorView> {
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text("Error", style: GoogleFonts.sacramento(fontSize: 30)),
+              child: Text("Your search did not return any results", style: GoogleFonts.sacramento(fontSize: 30), textAlign: TextAlign.center,),
             ),
             Padding(
               padding: const EdgeInsets.all(24),
-              child: LoadingAnimationWidget.fallingDot(
+              child: LoadingAnimationWidget.halfTriangleDot(
                 size: 50,
                 color: Colors.red,
               ),

@@ -16,21 +16,21 @@ class NotificationService {
     const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings('ic_launcher_xxxhdpi');
 
-    final IOSInitializationSettings initializationSettingsIOS =
-        IOSInitializationSettings(
-            requestSoundPermission: true,
-            requestBadgePermission: true,
-            requestAlertPermission: true,
-            onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+    // final IOSInitializationSettings initializationSettingsIOS =
+    //     IOSInitializationSettings(
+    //         requestSoundPermission: true,
+    //         requestBadgePermission: true,
+    //         requestAlertPermission: true,
+    //         onDidReceiveLocalNotification: onDidReceiveLocalNotification);
 
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-    );
+    // final InitializationSettings initializationSettings =
+    //     InitializationSettings(
+    //   android: initializationSettingsAndroid,
+    //   iOS: initializationSettingsIOS,
+    // );
 
-    await _localNotifications.initialize(initializationSettings,
-        onSelectNotification: selectNotification);
+    // await _localNotifications.initialize(initializationSettings,
+    //       onSelectNotification: selectNotification);
   }
 
   void onDidReceiveLocalNotification(
