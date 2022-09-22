@@ -118,6 +118,8 @@ class _MainViewState extends State<MainView>
     MainView.wannaRebuild.value = true;
     MainView.wannaRebuild.value = false;
     MainView.init_counter_from_rebuild = 0;
+    VideoInfoBottomView.NumberOfCallsFromTabChange =
+        0; // Resetting all the state values
 
     setState(() async {
       await _updateState();
@@ -218,7 +220,7 @@ class _MainViewState extends State<MainView>
               if (index < list.length) {
                 return Card(
                     child: ListTile(
-                        title: Text(list.elementAt(index).title,
+                        title: Text(list.elementAt(index).title ?? "",
                             style: GoogleFonts.dmSans(
                                 fontWeight: FontWeight.bold)),
                         subtitle: Text(list.elementAt(index).description ?? "",
@@ -256,35 +258,31 @@ class _MainViewState extends State<MainView>
                           );
                         }),
                         onTap: () async {
+                          // Pass the video through the explode functions
+                          YoutubeExplode yt = YoutubeExplode();
+                          Video video = await yt.videos.get(
+                              'https://youtube.com/watch?v=${list.elementAt(index).id}');
+                          print("Video ID pressed on: ${video.id.toString()}");
+
                           // ignore: use_build_context_synchronously
                           Navigator.of(context, rootNavigator: true).push(
                             MaterialPageRoute(builder: (context) {
                               // Populate static video info to be passed further
-                              VideoInfo.video = list.elementAt(index);
+                              VideoInfo.video = video;
                               // Other elements to be easier to access
-                              VideoInfo.ID =
-                                  list.elementAt(index).id.toString() ?? "";
-                              VideoInfo.author =
-                                  list.elementAt(index).author ?? "";
-                              VideoInfo.description = list
-                                      .elementAt(index)
-                                      .description
-                                      .characters
-                                      .string ??
-                                  "";
-                              VideoInfo.name =
-                                  list.elementAt(index).title ?? "";
-                              VideoInfo.publishDate =
-                                  list.elementAt(index).publishDate;
-                              VideoInfo.channelID =
-                                  list.elementAt(index).channelId;
-                              VideoInfo.isLive = list.elementAt(index).isLive;
-                              VideoInfo.keywords =
-                                  list.elementAt(index).keywords;
+                              VideoInfo.ID = video.id.toString() ?? "";
+                              VideoInfo.author = video.author ?? "";
+                              VideoInfo.description =
+                                  video.description.characters.string ?? "";
+                              VideoInfo.name = video.title ?? "";
+                              VideoInfo.publishDate = video.publishDate;
+                              VideoInfo.channelID = video.channelId;
+                              VideoInfo.isLive = video.isLive;
+                              VideoInfo.keywords = video.keywords;
 
-                                  
                               VideoInfoBottomView.NumberOfCallsFromTabChange =
                                   0;
+
                               return const VideoView();
                             }),
                           );

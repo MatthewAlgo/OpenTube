@@ -174,8 +174,7 @@ class _TrendingViewState extends State<TrendingView> {
                               VideoInfo.isLive = video.isLive;
                               VideoInfo.keywords = video.keywords;
 
-                              VideoInfoBottomView.NumberOfCallsFromTabChange =
-                                  0;
+                              VideoInfoBottomView.NumberOfCallsFromTabChange =0;
                                   
                               return const VideoView();
                             }),

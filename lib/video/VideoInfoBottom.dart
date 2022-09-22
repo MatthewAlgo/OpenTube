@@ -54,25 +54,15 @@ Future<VideoData?> fetchNetworkCall() async {
   YoutubeDataApi youtubeDataApi = YoutubeDataApi(); // To get channel data
   var YtExplode = YoutubeExplode();
   // We get the list of comments from the youtube server
-  var VideoComments =
-      await YtExplode.videos.comments.getComments(VideoInfo.video);
-  print("VideoComments: ${VideoComments.toString()}");
+  
+  // We call the youtubeDataApi on the same video
+  VideoInfoBottomView.PreservedVideoDataState = (await youtubeDataApi.fetchVideoData(VideoInfo.ID.toString()))!;
 
-  if (VideoInfo != null) {
-    // We assign the data to the static variable
-    VideoInfo.comms = VideoComments;
-
-    // We call the youtubeDataApi on the same video
-    VideoInfoBottomView.PreservedVideoDataState = (await youtubeDataApi.fetchVideoData(VideoInfo.ID.toString()))!;
-    if (VideoInfoBottomView.PreservedVideoDataState != null) {
-      // And get the list of similar videos
-      VideoInfo.relatedVideos =
-          VideoInfoBottomView.PreservedVideoDataState!.videosList; // Also fill the related videos
-    }
-    return VideoInfoBottomView.PreservedVideoDataState;
-  } else {
-    throw Exception("VideoInfo is null");
-  }
+  // And get the list of similar videos
+  VideoInfo.relatedVideos =
+      VideoInfoBottomView.PreservedVideoDataState.videosList; // Also fill the related videos
+  
+  return VideoInfoBottomView.PreservedVideoDataState;
 }
 
 Widget getPageBody(BuildContext context) {
