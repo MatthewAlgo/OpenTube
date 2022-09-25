@@ -18,6 +18,7 @@ import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:youtube_data_api/models/video_data.dart';
 import 'package:youtube_data_api/youtube_data_api.dart' as dataapi;
+import 'package:youtube_data_api/youtube_data_api.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:youtube_data_api/models/video.dart' as vid;
 
@@ -66,21 +67,25 @@ class _MainViewState extends State<MainView>
 
   Future _fetchNewData() async {
     MainView.loadingState = true;
-    VideosSearched = await appendToSearchList(VideosSearched);
-    VideosSearchedList = assignData();
-    MainView.loadingState = false;
-    comingFromFetch = true;
-    setState(() {});
-  }
 
-  List<Video> assignData() {
+    // Debug
+    print(VideosSearched);
+    VideosSearched = await appendToSearchList(VideosSearched);
+    print("Second instance after load: ${VideosSearched}");
+
+    // We assign the received object to the list itself
     List<Video> myVideoList = [];
     var videoIterator = VideosSearched.iterator;
     while (videoIterator.moveNext()) {
       myVideoList.add(videoIterator.current);
     }
     VideosSearchedList = myVideoList;
-    return myVideoList;
+
+    MainView.loadingState = false;
+    comingFromFetch = true;
+    setState(() {
+      VideosSearchedList.length;
+    });
   }
 
   Future<List<Video>> _updateState() async {
@@ -88,12 +93,20 @@ class _MainViewState extends State<MainView>
     YoutubeExplode ytExplode =
         YoutubeExplode(); // Used to transfer video id data from one API to another
 
+
     try {
       MainView.loadingState = true;
       if (!comingFromFetch) {
         MainView.searchQuery = _editingcontroller.text ?? "";
         VideosSearched = await getSearch(MainView.searchQuery, context);
-        VideosSearchedList = assignData();
+
+        // We assign the received object to the list itself
+        List<Video> myVideoList = [];
+        var videoIterator = VideosSearched.iterator;
+        while (videoIterator.moveNext()) {
+          myVideoList.add(videoIterator.current);
+        }
+        VideosSearchedList = myVideoList;
 
         dataapi.YoutubeDataApi youtubeDataApi = dataapi.YoutubeDataApi();
         List<vid.Video> trendingMusicVideos =
@@ -114,14 +127,6 @@ class _MainViewState extends State<MainView>
         TrendingView.videoListTrending
             .shuffle(); // Make the list of elements and mix the categories -> for now
 
-        // Update the YtExplode list
-        for (int i = 0; i < TrendingView.videoListTrending.length; ++i) {
-          Video videoIDAtI = await ytExplode.videos.get(
-              TrendingView.videoListTrending.elementAt(i).videoId.toString());
-          print(videoIDAtI.id.toString());
-
-          TrendingView.videoListTrendingYTExplode.add(videoIDAtI);
-        }
       } else {
         comingFromFetch = false;
       }
@@ -303,7 +308,8 @@ class _MainViewState extends State<MainView>
                               VideoInfo.keywords = video.keywords;
                               VideoInfo.comments = comments!;
 
-                              VideoInfoBottomView.NumberOfCallsFromTabChange = 0;
+                              VideoInfoBottomView.NumberOfCallsFromTabChange =
+                                  0;
 
                               return const VideoView();
                             }),

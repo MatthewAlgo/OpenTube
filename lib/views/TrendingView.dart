@@ -13,7 +13,6 @@ import '../video/VideoView.dart';
 class TrendingView extends StatefulWidget {
   const TrendingView({Key? key}) : super(key: key);
   static late List<vid.Video> videoListTrending;
-  static late List<Video> videoListTrendingYTExplode;
 
   @override
   State<TrendingView> createState() => _TrendingViewState();
@@ -119,9 +118,6 @@ class _TrendingViewState extends State<TrendingView> {
                         title: Text(list.elementAt(index).title.toString(),
                             style: GoogleFonts.dmSans(
                                 fontWeight: FontWeight.bold)),
-                        // subtitle: Text(TrendingView.videoListTrendingYTExplode.elementAt(index).description.toString(),
-                        //     style: GoogleFonts.dmSans(
-                        //         fontWeight: FontWeight.bold)),
                         leading: Container(
                           decoration: BoxDecoration(
                             borderRadius:

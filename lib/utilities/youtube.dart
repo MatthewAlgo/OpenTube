@@ -40,13 +40,16 @@ Future<exp.VideoSearchList> appendToSearchList(exp.VideoSearchList vs) async {
   HomePage.loadingState = true;
   var yt = exp.YoutubeExplode();
   var next = await vs.nextPage();
+  print("Next page: ${next}");
+
   if (next != null) {
     for (var video in next.sublist(0)) {
       vs.add(video);
     }
+  }else{
+    print("No more videos to load");
   }
 
   HomePage.loadingState = false;
   return vs;
 }
-
