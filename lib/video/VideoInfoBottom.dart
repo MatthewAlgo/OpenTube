@@ -15,9 +15,11 @@ import '../utilities/YouTube.dart';
 import 'VideoView.dart';
 
 class VideoInfoBottomView extends StatefulWidget {
-  const VideoInfoBottomView({Key? key}) : super(key: key);
+  const VideoInfoBottomView({Key? key, required String this.vidIdent})
+      : super(key: key);
   static int NumberOfCallsFromTabChange = 0;
   static late VideoData PreservedVideoDataState;
+  final String vidIdent;
 
   @override
   State<VideoInfoBottomView> createState() => _VideoInfoBottomViewState();
@@ -30,11 +32,11 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
 
   @override
   Widget build(BuildContext context) {
-    // super.build(context);
+    super.build(context);
     VideoInfoBottomView.NumberOfCallsFromTabChange++;
-    if (VideoInfoBottomView.NumberOfCallsFromTabChange == 1) {
+    // if (VideoInfoBottomView.NumberOfCallsFromTabChange == 1) {
       return FutureBuilder<VideoData?>(
-          future: fetchNetworkCall(),
+          future: fetchNetworkCall(widget.vidIdent),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
               return getPageBody(context);
@@ -44,25 +46,36 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
               return ErrorView();
             }
           });
-    } else {
-      return getPageBody(context);
-    }
+    // } else {
+    //   return getPageBody(context);
+    // }
   }
 }
 
-Future<VideoData?> fetchNetworkCall() async {
+Future<VideoData?> fetchNetworkCall(String Vidid) async {
   YoutubeDataApi youtubeDataApi = YoutubeDataApi(); // To get channel data
   var YtExplode = YoutubeExplode();
-  // We get the list of comments from the youtube server
-  
-  // We call the youtubeDataApi on the same video
-  VideoInfoBottomView.PreservedVideoDataState = (await youtubeDataApi.fetchVideoData(VideoInfo.ID.toString()))!;
 
-  // And get the list of similar videos
-  VideoInfo.relatedVideos =
-      VideoInfoBottomView.PreservedVideoDataState.videosList; // Also fill the related videos
-  
-  return VideoInfoBottomView.PreservedVideoDataState;
+  // We get the list of comments from the youtube server
+  // var VideoComments =
+  //     await YtExplode.videos.comments.getComments(VideoInfo.video);
+
+  if (VideoInfo != null) {
+    // We assign the data to the static variable
+    // VideoInfo.comms = VideoComments;
+
+    // We call the youtubeDataApi on the same video
+    VideoInfoBottomView.PreservedVideoDataState =
+        (await youtubeDataApi.fetchVideoData(Vidid))!;
+    if (VideoInfoBottomView.PreservedVideoDataState != null) {
+      // And get the list of similar videos
+      VideoInfo.relatedVideos = VideoInfoBottomView
+          .PreservedVideoDataState.videosList; // Also fill the related videos
+    }
+    return VideoInfoBottomView.PreservedVideoDataState;
+  } else {
+    throw Exception("VideoInfo is null");
+  }
 }
 
 Widget getPageBody(BuildContext context) {
@@ -95,8 +108,8 @@ Widget getPageBody(BuildContext context) {
                           child: Icon(Icons.thumb_up_alt_rounded),
                         ), // <-- Icon
                         Text(
-                            VideoInfoBottomView
-                                    .PreservedVideoDataState?.video!.likeCount ??
+                            VideoInfoBottomView.PreservedVideoDataState?.video!
+                                    .likeCount ??
                                 "",
                             style:
                                 GoogleFonts.dmSans(fontSize: 12)), // <-- Text
@@ -111,8 +124,8 @@ Widget getPageBody(BuildContext context) {
                           child: Icon(Icons.play_circle),
                         ), // <-- Icon
                         Text(
-                           VideoInfoBottomView
-                                    .PreservedVideoDataState?.video!.viewCount ??
+                            VideoInfoBottomView.PreservedVideoDataState?.video!
+                                    .viewCount ??
                                 "",
                             style:
                                 GoogleFonts.dmSans(fontSize: 12)), // <-- Text
@@ -256,8 +269,8 @@ Widget getPageBody(BuildContext context) {
                       child: Column(
                         children: [
                           Text(
-                              VideoInfoBottomView.PreservedVideoDataState?.video!
-                                      .channelName
+                              VideoInfoBottomView.PreservedVideoDataState
+                                      ?.video!.channelName
                                       ?.toString() ??
                                   "",
                               style: GoogleFonts.dmSans(

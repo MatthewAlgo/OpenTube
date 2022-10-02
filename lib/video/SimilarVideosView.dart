@@ -48,33 +48,12 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
                           value: downloadProgress.progress),
                   errorWidget: (context, url, error) => Icon(Icons.error),
                 ),
-                onTap: (() async {
-                  var yt = YoutubeExplode();
-                  var video = await yt.videos
-                      .get(VideoInfo.relatedVideos.elementAt(index).videoId);
-                  var comments =
-                      await yt.videos.commentsClient.getComments(video);
-                  // Navigator.of(context).pop();
+                onTap: (()  {
                   // ignore: use_build_context_synchronously
                   Navigator.of(context, rootNavigator: true).pushReplacement(
                     MaterialPageRoute(builder: (context) {
-                      // Populate static video info to be passed further
-                      VideoInfo.video = video;
-                      // Other elements to be easier to access
-                      VideoInfo.ID = video.id.toString() ?? "";
-                      VideoInfo.author = video.author ?? "";
-                      VideoInfo.description =
-                          video.description.characters.string ?? "";
-                      VideoInfo.name = video.title ?? "";
-                      VideoInfo.publishDate = video.publishDate;
-                      VideoInfo.channelID = video.channelId;
-                      VideoInfo.isLive = video.isLive;
-                      VideoInfo.keywords = video.keywords;
-                      VideoInfo.comments = comments!;
 
-                      VideoInfoBottomView.NumberOfCallsFromTabChange = 0;
-
-                      return const VideoView();
+                      return VideoView(videoId: '${VideoInfo.relatedVideos.elementAt(index).videoId}');
                     }),
                   );
                 }),

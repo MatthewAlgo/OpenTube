@@ -9,6 +9,7 @@ import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_image/network.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:libretube/views/NoResultsView.dart';
 import 'package:libretube/views/TrendingView.dart';
 import 'package:libretube/views/ErrorView.dart';
 import 'package:libretube/views/LoadingView.dart';
@@ -16,15 +17,14 @@ import 'package:libretube/views/SubscriptionsView.dart';
 import 'package:libretube/video/VideoView.dart';
 import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
 import 'package:transparent_image/transparent_image.dart';
+import 'package:youtube_data_api/models/playlist.dart';
 import 'package:youtube_data_api/models/video_data.dart';
 import 'package:youtube_data_api/youtube_data_api.dart' as dataapi;
-import 'package:youtube_data_api/youtube_data_api.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:youtube_data_api/models/video.dart' as vid;
 
 import '../utilities/YouTube.dart';
 import '../video/VideoInfoBottom.dart';
-import 'NoResultsView.dart';
 
 class MainView extends StatefulWidget {
   const MainView({Key? key}) : super(key: key);
@@ -67,46 +67,32 @@ class _MainViewState extends State<MainView>
 
   Future _fetchNewData() async {
     MainView.loadingState = true;
-
-    // Debug
-    print(VideosSearched);
     VideosSearched = await appendToSearchList(VideosSearched);
-    print("Second instance after load: ${VideosSearched}");
+    VideosSearchedList = assignData();
+    MainView.loadingState = false;
+    comingFromFetch = true;
+    setState(() {});
+  }
 
-    // We assign the received object to the list itself
+  List<Video> assignData() {
     List<Video> myVideoList = [];
     var videoIterator = VideosSearched.iterator;
     while (videoIterator.moveNext()) {
       myVideoList.add(videoIterator.current);
     }
     VideosSearchedList = myVideoList;
-
-    MainView.loadingState = false;
-    comingFromFetch = true;
-    setState(() {
-      VideosSearchedList.length;
-    });
+    return myVideoList;
   }
 
   Future<List<Video>> _updateState() async {
     // Function used to fill search and user interaction buffers
-    YoutubeExplode ytExplode =
-        YoutubeExplode(); // Used to transfer video id data from one API to another
-
 
     try {
       MainView.loadingState = true;
       if (!comingFromFetch) {
         MainView.searchQuery = _editingcontroller.text ?? "";
         VideosSearched = await getSearch(MainView.searchQuery, context);
-
-        // We assign the received object to the list itself
-        List<Video> myVideoList = [];
-        var videoIterator = VideosSearched.iterator;
-        while (videoIterator.moveNext()) {
-          myVideoList.add(videoIterator.current);
-        }
-        VideosSearchedList = myVideoList;
+        VideosSearchedList = assignData();
 
         dataapi.YoutubeDataApi youtubeDataApi = dataapi.YoutubeDataApi();
         List<vid.Video> trendingMusicVideos =
@@ -118,6 +104,7 @@ class _MainViewState extends State<MainView>
 
         TrendingView.videoListTrending =
             trendingMusicVideos; // Assign the variables
+
         for (int i = 0; i < trendingGamingVideos.length; ++i) {
           TrendingView.videoListTrending.add(trendingGamingVideos.elementAt(i));
         }
@@ -143,8 +130,6 @@ class _MainViewState extends State<MainView>
     MainView.wannaRebuild.value = true;
     MainView.wannaRebuild.value = false;
     MainView.init_counter_from_rebuild = 0;
-    VideoInfoBottomView.NumberOfCallsFromTabChange =
-        0; // Resetting all the state values
 
     setState(() async {
       await _updateState();
@@ -245,7 +230,7 @@ class _MainViewState extends State<MainView>
               if (index < list.length) {
                 return Card(
                     child: ListTile(
-                        title: Text(list.elementAt(index).title ?? "",
+                        title: Text(list.elementAt(index).title,
                             style: GoogleFonts.dmSans(
                                 fontWeight: FontWeight.bold)),
                         subtitle: Text(list.elementAt(index).description ?? "",
@@ -282,36 +267,12 @@ class _MainViewState extends State<MainView>
                             ],
                           );
                         }),
-                        onTap: () async {
-                          // Pass the video through the explode functions
-                          YoutubeExplode yt = YoutubeExplode();
-                          Video video = await yt.videos.get(
-                              'https://youtube.com/watch?v=${list.elementAt(index).id}');
-                          print("Video ID pressed on: ${video.id.toString()}");
-                          var comments =
-                              await yt.videos.commentsClient.getComments(video);
-
+                        onTap: () {
                           // ignore: use_build_context_synchronously
                           Navigator.of(context, rootNavigator: true).push(
                             MaterialPageRoute(builder: (context) {
-                              // Populate static video info to be passed further
-                              VideoInfo.video = video;
-                              // Other elements to be easier to access
-                              VideoInfo.ID = video.id.toString() ?? "";
-                              VideoInfo.author = video.author ?? "";
-                              VideoInfo.description =
-                                  video.description.characters.string ?? "";
-                              VideoInfo.name = video.title ?? "";
-                              VideoInfo.publishDate = video.publishDate;
-                              VideoInfo.channelID = video.channelId;
-                              VideoInfo.isLive = video.isLive;
-                              VideoInfo.keywords = video.keywords;
-                              VideoInfo.comments = comments!;
-
-                              VideoInfoBottomView.NumberOfCallsFromTabChange =
-                                  0;
-
-                              return const VideoView();
+                              return VideoView(
+                                  videoId: '${list.elementAt(index).id}');
                             }),
                           );
                         }));
@@ -335,12 +296,12 @@ class _MainViewState extends State<MainView>
           } else if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasError) {
               return const ErrorView();
-            } else if (!snapshot.hasError && snapshot.data?.length == 0) {
-              return const NoResultsView();
             } else if (snapshot.hasData) {
-              return BuildCards(context, snapshot.data);
+              return BuildCards(context, VideosSearchedList);
+            } else if (snapshot.data?.length == 0) {
+              return NoResultsView();
             } else {
-              return BuildCards(context, snapshot.data);
+              return ErrorView();
             }
           } else {
             return Text('State: ${snapshot.connectionState}');

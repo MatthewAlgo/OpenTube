@@ -15,7 +15,6 @@ class _ErrorViewState extends State<ErrorView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       body: Center(
         child: Column(

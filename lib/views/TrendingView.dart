@@ -153,35 +153,11 @@ class _TrendingViewState extends State<TrendingView> {
                             ],
                           );
                         }),
-                        onTap: () async {
-                          // Pass the video through the explode functions
-                          YoutubeExplode yt = YoutubeExplode();
-                          var video = await yt.videos.get(
-                              'https://youtube.com/watch?v=${list.elementAt(index).videoId}');
-                          var comments =
-                              await yt.videos.commentsClient.getComments(video);
-
+                        onTap: () {
                           // ignore: use_build_context_synchronously
                           Navigator.of(context, rootNavigator: true).push(
                             MaterialPageRoute(builder: (context) {
-                              // Populate static video info to be passed further
-                              VideoInfo.video = video;
-                              // Other elements to be easier to access
-                              VideoInfo.ID = video.id.toString() ?? "";
-                              VideoInfo.author = video.author ?? "";
-                              VideoInfo.description =
-                                  video.description.characters.string ?? "";
-                              VideoInfo.name = video.title ?? "";
-                              VideoInfo.publishDate = video.publishDate;
-                              VideoInfo.channelID = video.channelId;
-                              VideoInfo.isLive = video.isLive;
-                              VideoInfo.keywords = video.keywords;
-                              VideoInfo.comments = comments!;
-
-                              VideoInfoBottomView.NumberOfCallsFromTabChange =
-                                  0;
-
-                              return const VideoView();
+                              return VideoView(videoId: '${list.elementAt(index).videoId}');
                             }),
                           );
                         }));
