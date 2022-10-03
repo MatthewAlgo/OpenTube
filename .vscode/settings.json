@@ -4,7 +4,5 @@
     "emulator.emulatorPathLinux": "~/Android/Sdk/emulator",
     "emulator.emulatorPathWindows": "C:\\Users\\matthewalgo\\AppData\\Local\\Android\\Sdk\\emulator",
     "cmake.configureOnOpen": false,
-    "editor.fontFamily": "'Fira Code'",
-    "editor.fontLigatures": true,
     
 }
