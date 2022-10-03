@@ -37,7 +37,6 @@ class _HomePageState extends State<HomePage>
 
   @override
   void initState() {
-    print("From PageOne - This will only print once");
     _pageController = PageController(initialPage: 0, keepPage: true);
     super.initState();
   }

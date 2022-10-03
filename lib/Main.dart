@@ -14,6 +14,9 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await Hive.initFlutter();
+  Hive.registerAdapter(ChannelAdapter());
+
   runApp(MaterialApp(
       theme: ThemeData(
         useMaterial3: true,
@@ -23,8 +26,6 @@ Future<void> main() async {
       routes: {
         '/': (context) => HomePage(),
       }));
-  await Hive.initFlutter();
-  Hive.registerAdapter(ChannelAdapter());
 }
 
 class MyApp extends StatefulWidget {

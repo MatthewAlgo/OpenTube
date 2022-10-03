@@ -14,6 +14,7 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../utilities/YouTube.dart';
+import '../views/SubscriptionsView.dart';
 import 'VideoView.dart';
 import '../utilities/Channel.dart' as chan;
 
@@ -23,6 +24,7 @@ class VideoInfoBottomView extends StatefulWidget {
   static int NumberOfCallsFromTabChange = 0;
   static late VideoData PreservedVideoDataState;
   final String vidIdent;
+  static bool SubscribedToChannel = false;
 
   @override
   State<VideoInfoBottomView> createState() => _VideoInfoBottomViewState();
@@ -314,6 +316,7 @@ Widget getPageBody(BuildContext context) {
                               ),
                               onPressed: () async {
                                 // Get channel data from Youtube API
+
                                 chan.Channel channel = chan.Channel(
                                   id: VideoInfoBottomView
                                           .PreservedVideoDataState
@@ -339,13 +342,27 @@ Widget getPageBody(BuildContext context) {
                                               ""),
                                 );
 
-                                // TODO: Add to subscriber list / count
                                 LocalStorageRepository localStorageRepository =
                                     LocalStorageRepository();
                                 Box box =
                                     await localStorageRepository.openBox();
-                                localStorageRepository.addChanneltoList(
-                                    box, channel);
+
+                                if (!box.containsKey(channel.id)) {
+                                  localStorageRepository.addChanneltoList(
+                                      box, channel);
+
+                                  // Assign the channel lists
+                                  SubscriptionsView.listChannelStatic =
+                                      localStorageRepository
+                                          .getChannelList(box);
+                                  SubscriptionsView
+                                          .listChannelStaticNotifier.value =
+                                      SubscriptionsView.listChannelStatic;
+                                  VideoInfoBottomView.SubscribedToChannel =
+                                      true;
+                                }else{
+                                  // Already subscribed to channel
+                                }
                               },
                               child: Text('Subscribe',
                                   style: GoogleFonts.dmSans())),

@@ -92,7 +92,10 @@ class _MainViewState extends State<MainView>
     LocalStorageRepository localStorageRepository = LocalStorageRepository();
     Box box = await localStorageRepository.openBox();
     List<chan.Channel> channels = localStorageRepository.getChannelList(box);
-    SubscriptionsList.subscriptionsChannel = channels; // Fill the buffer for the channels
+    SubscriptionsView.listChannelStatic = channels; // Fill the static variable
+    SubscriptionsList.subscriptionsChannel =
+        channels; // Fill the buffer for the channels
+    SubscriptionsView.listChannelStaticNotifier.value = channels;
 
     try {
       MainView.loadingState = true;

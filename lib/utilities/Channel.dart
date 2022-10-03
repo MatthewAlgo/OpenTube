@@ -1,4 +1,3 @@
-import 'package:json_serializable/builder.dart';
 import 'package:json_store/json_store.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:hive/hive.dart';
