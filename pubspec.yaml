@@ -54,6 +54,13 @@ dependencies:
   youtube_data_api: 1.0.4
   flutter_share: 2.0.0
   share_plus: ^4.0.10+1
+  json_store: ^2.0.0
+  json_serializable: ^6.4.1
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.0.11
+  build_runner: 
+  hive_generator:
 
 
 dev_dependencies:
@@ -73,8 +80,9 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
 
-  # assets:
+  assets:
   #     - assets/giphy.gif
+        - assets/subscriptions.json
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

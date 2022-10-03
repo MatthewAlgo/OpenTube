@@ -3,6 +3,8 @@ import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_share/flutter_share.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive/hive.dart';
+import 'package:libretube/utilities/LocalStorageRepo.dart';
 import 'package:libretube/views/ErrorView.dart';
 import 'package:libretube/views/LoadingView.dart';
 import 'package:share_plus/share_plus.dart';
@@ -13,6 +15,7 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../utilities/YouTube.dart';
 import 'VideoView.dart';
+import '../utilities/Channel.dart' as chan;
 
 class VideoInfoBottomView extends StatefulWidget {
   const VideoInfoBottomView({Key? key, required String this.vidIdent})
@@ -35,17 +38,17 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
     super.build(context);
     VideoInfoBottomView.NumberOfCallsFromTabChange++;
     // if (VideoInfoBottomView.NumberOfCallsFromTabChange == 1) {
-      return FutureBuilder<VideoData?>(
-          future: fetchNetworkCall(widget.vidIdent),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return getPageBody(context);
-            } else if (snapshot.connectionState == ConnectionState.waiting) {
-              return LoadingView();
-            } else {
-              return ErrorView();
-            }
-          });
+    return FutureBuilder<VideoData?>(
+        future: fetchNetworkCall(widget.vidIdent),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return getPageBody(context);
+          } else if (snapshot.connectionState == ConnectionState.waiting) {
+            return LoadingView();
+          } else {
+            return ErrorView();
+          }
+        });
     // } else {
     //   return getPageBody(context);
     // }
@@ -309,8 +312,40 @@ Widget getPageBody(BuildContext context) {
                                   },
                                 ),
                               ),
-                              onPressed: () {
+                              onPressed: () async {
+                                // Get channel data from Youtube API
+                                chan.Channel channel = chan.Channel(
+                                  id: VideoInfoBottomView
+                                          .PreservedVideoDataState
+                                          ?.video!
+                                          .channelId ??
+                                      "",
+                                  title: VideoInfoBottomView
+                                          .PreservedVideoDataState
+                                          ?.video!
+                                          .channelName ??
+                                      "",
+                                  thumbnailURL: VideoInfoBottomView
+                                          .PreservedVideoDataState
+                                          ?.video!
+                                          .channelThumb ??
+                                      "",
+                                  channelURL:
+                                      'https://www.youtube.com/channel/' +
+                                          (VideoInfoBottomView
+                                                  .PreservedVideoDataState
+                                                  ?.video!
+                                                  .channelId ??
+                                              ""),
+                                );
+
                                 // TODO: Add to subscriber list / count
+                                LocalStorageRepository localStorageRepository =
+                                    LocalStorageRepository();
+                                Box box =
+                                    await localStorageRepository.openBox();
+                                localStorageRepository.addChanneltoList(
+                                    box, channel);
                               },
                               child: Text('Subscribe',
                                   style: GoogleFonts.dmSans())),

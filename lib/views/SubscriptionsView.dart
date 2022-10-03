@@ -3,9 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:json_store/json_store.dart';
+import 'dart:convert';
+
+import 'package:flutter/services.dart';
+import 'package:libretube/utilities/Channel.dart';
+import 'package:libretube/utilities/LocalStorageRepo.dart';
 
 class SubscriptionsView extends StatefulWidget {
-  const SubscriptionsView({Key? key}) : super(key: key);
+  SubscriptionsView({Key? key}) : super(key: key);
 
   @override
   State<SubscriptionsView> createState() => _SubscriptionsViewState();
@@ -82,11 +88,11 @@ class _SubscriptionsViewState extends State<SubscriptionsView> {
             ),
           ))),
       backgroundColor: Colors.pink.shade100,
-      body: Center(
-          child: Text(
-        'Cart Page',
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-      )),
+      body: Container(),
     );
   }
+}
+
+class SubscriptionsList {
+  static late List<Channel> subscriptionsChannel;
 }

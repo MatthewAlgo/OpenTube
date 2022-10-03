@@ -9,6 +9,7 @@ import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_image/network.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive/hive.dart';
 import 'package:libretube/views/NoResultsView.dart';
 import 'package:libretube/views/TrendingView.dart';
 import 'package:libretube/views/ErrorView.dart';
@@ -23,11 +24,13 @@ import 'package:youtube_data_api/youtube_data_api.dart' as dataapi;
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:youtube_data_api/models/video.dart' as vid;
 
+import '../utilities/LocalStorageRepo.dart';
 import '../utilities/YouTube.dart';
 import '../video/VideoInfoBottom.dart';
+import '../utilities/Channel.dart' as chan;
 
 class MainView extends StatefulWidget {
-  const MainView({Key? key}) : super(key: key);
+  MainView({Key? key}) : super(key: key);
   static String searchQuery = "";
   static bool loadingState = false; // Acts like a pseudo-mutex
   static int init_counter_from_rebuild = 0;
@@ -86,6 +89,10 @@ class _MainViewState extends State<MainView>
 
   Future<List<Video>> _updateState() async {
     // Function used to fill search and user interaction buffers
+    LocalStorageRepository localStorageRepository = LocalStorageRepository();
+    Box box = await localStorageRepository.openBox();
+    List<chan.Channel> channels = localStorageRepository.getChannelList(box);
+    SubscriptionsList.subscriptionsChannel = channels; // Fill the buffer for the channels
 
     try {
       MainView.loadingState = true;

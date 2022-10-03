@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:hive/hive.dart';
+import 'package:libretube/utilities/Channel.dart';
+import 'package:libretube/views/ErrorView.dart';
 import 'package:libretube/views/HomePage.dart';
 import 'package:libretube/video/VideoView.dart';
+import 'package:libretube/views/LoadingView.dart';
+import 'package:path_provider/path_provider.dart' as path_provider;
+import 'package:hive_flutter/hive_flutter.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -17,6 +23,8 @@ Future<void> main() async {
       routes: {
         '/': (context) => HomePage(),
       }));
+  await Hive.initFlutter();
+  Hive.registerAdapter(ChannelAdapter());
 }
 
 class MyApp extends StatefulWidget {
@@ -27,15 +35,19 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
- 
   @override
   void initState() {
     super.initState();
   }
 
+  @override
+  void dispose() {
+    Hive.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const HomePage();
+    return HomePage();
   }
 }

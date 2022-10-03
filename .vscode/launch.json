@@ -6,7 +6,7 @@
   "configurations": [
           {
                   "name": "LibreTube",
-                  "program": "lib/main.dart",
+                  "program": "lib/Main.dart",
                   "request": "launch",
                   "type": "dart",
                   "args": [
