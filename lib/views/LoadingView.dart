@@ -16,25 +16,24 @@ class _LoadingViewState extends State<LoadingView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Container(  
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text("Loading...", style: GoogleFonts.sacramento(fontSize: 30)),
+      resizeToAvoidBottomInset: false,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Loading...", style: GoogleFonts.sacramento(fontSize: 30)),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: LoadingAnimationWidget.inkDrop(
+                size: 50,
+                color: Colors.red,
               ),
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: LoadingAnimationWidget.inkDrop(
-                  size: 50,
-                  color: Colors.red,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
