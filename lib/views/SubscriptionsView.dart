@@ -4,12 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive/hive.dart';
 import 'package:json_store/json_store.dart';
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:libretube/utilities/Channel.dart' as chan;
 import 'package:libretube/utilities/LocalStorageRepo.dart';
+import 'package:libretube/views/ChannelView.dart';
+import 'package:youtube_data_api/models/channel.dart' as datachan;
+import 'package:youtube_explode_dart/youtube_explode_dart.dart' as ytExp;
+
+import 'dart:developer' as developer;
+
+import '../video/VideoInfoBottom.dart';
 
 class SubscriptionsView extends StatefulWidget {
   SubscriptionsView({Key? key}) : super(key: key);
@@ -109,7 +117,9 @@ class _SubscriptionsViewState extends State<SubscriptionsView> {
                       ),
                       child: ListTile(
                         dense: false,
-                        trailing: Icon(Icons.play_arrow_rounded),
+                        trailing: buildUnSubscribeButton(SubscriptionsView
+                            .listChannelStatic
+                            .elementAt(index)),
                         title: Text(
                           SubscriptionsView.listChannelStatic
                               .elementAt(index)
@@ -127,14 +137,25 @@ class _SubscriptionsViewState extends State<SubscriptionsView> {
                           errorWidget: (context, url, error) =>
                               Icon(Icons.error),
                         ),
-                        onTap: (() {
-                          // ignore: use_build_context_synchronously
-                          // Navigator.of(context, rootNavigator: true).pushReplacement(
-                          //   MaterialPageRoute(builder: (context) {
+                        onTap: (() async {
+                          // Open The Channel Page using ytExplode
+                          ytExp.YoutubeExplode ytExplode =
+                              ytExp.YoutubeExplode();
+                          ytExp.Channel playlistVideos = await ytExplode
+                              .channels
+                              .get(SubscriptionsView.listChannelStatic
+                                  .elementAt(index)
+                                  .id);
 
-                          //     return VideoView(videoId: '${VideoInfo.relatedVideos.elementAt(index).videoId}');
-                          //   }),
-                          // );
+                          // Now we build the channel page based off the provided channel
+                          // ignore: use_build_context_synchronously
+                          Navigator.of(context, rootNavigator: true).push(
+                            MaterialPageRoute(builder: (context) {
+                              return ChannelView(
+                                localChannel: playlistVideos,
+                              );
+                            }),
+                          );
                         }),
                       ),
                     ),
@@ -144,6 +165,65 @@ class _SubscriptionsViewState extends State<SubscriptionsView> {
             ),
           );
         });
+  }
+
+  Widget buildUnSubscribeButton(chan.Channel channelLocal) {
+    return TextButton(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+          foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+          overlayColor: MaterialStateProperty.resolveWith<Color?>(
+            (Set<MaterialState> states) {
+              if (states.contains(MaterialState.hovered))
+                return Colors.blue.withOpacity(0.04);
+              if (states.contains(MaterialState.focused) ||
+                  states.contains(MaterialState.pressed))
+                return Colors.blue.withOpacity(0.12);
+              return null; // Defer to the widget's default.
+            },
+          ),
+        ),
+        onPressed: () => showDialog<String>(
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                title: const Text('Confirmation'),
+                content: Text(
+                    'Are you sure you want to unsubscribe from ${channelLocal.title}?'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, 'Cancel'),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      chan.Channel channel = chan.Channel(
+                          id: channelLocal.id,
+                          title: channelLocal.title,
+                          thumbnailURL: channelLocal.thumbnailURL,
+                          channelURL: channelLocal.channelURL);
+
+                      // Unsubscribe and refresh list
+                      LocalStorageRepository localStorageRepository =
+                          LocalStorageRepository();
+                      Box box = await localStorageRepository.openBox();
+                      localStorageRepository.removeChannelFromList(
+                          box, channel);
+
+                      // Assign the channel lists
+                      SubscriptionsView.listChannelStatic =
+                          localStorageRepository.getChannelList(box);
+                      SubscriptionsView.listChannelStaticNotifier.value =
+                          SubscriptionsView.listChannelStatic;
+                      VideoInfoBottomView.SubscribedToChannel = true;
+                      // ignore: use_build_context_synchronously
+                      Navigator.pop(context, 'OK');
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            ),
+        child: Text('Unsubscribe', style: GoogleFonts.dmSans()));
   }
 }
 

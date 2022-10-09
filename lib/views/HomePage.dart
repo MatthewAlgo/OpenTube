@@ -51,6 +51,7 @@ class _HomePageState extends State<HomePage>
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
           body: PageView(
+            physics: NeverScrollableScrollPhysics(),
             controller: _pageController,
             children: <Widget>[
               MainView(),

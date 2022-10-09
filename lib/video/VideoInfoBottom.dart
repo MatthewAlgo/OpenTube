@@ -14,6 +14,7 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../utilities/YouTube.dart';
+import '../views/ChannelView.dart';
 import '../views/SubscriptionsView.dart';
 import 'VideoView.dart';
 import '../utilities/Channel.dart' as chan;
@@ -144,10 +145,9 @@ Widget getPageBody(BuildContext context) {
                           padding: const EdgeInsets.all(4.0),
                           child: Icon(Icons.publish),
                         ), // <-- Icon
-                        Text(
-                            VideoInfoBottomView
-                                    .PreservedVideoDataState?.video!.date ??
-                                "",
+                        Text(getVideoDate(VideoInfoBottomView
+                                    .PreservedVideoDataState.video!.date ??
+                                "1 Jan. 1970"),
                             style:
                                 GoogleFonts.dmSans(fontSize: 12)), // <-- Text
                       ],
@@ -160,7 +160,7 @@ Widget getPageBody(BuildContext context) {
                       await Share.share(
                         "https://www.youtube.com/watch?v=$VideoInfoBottomView.PreservedVideoDataState?.video.videoId}",
                         subject:
-                            "https://www.youtube.com/watch?v=${VideoInfoBottomView.PreservedVideoDataState?.video!.videoId}",
+                            "https://www.youtube.com/watch?v=${VideoInfoBottomView.PreservedVideoDataState.video!.videoId}",
                         sharePositionOrigin:
                             box!.localToGlobal(Offset.zero) & box.size,
                       );
@@ -261,12 +261,34 @@ Widget getPageBody(BuildContext context) {
                 alignment: Alignment.center,
                 child: Row(
                   children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: CircleAvatar(
-                        backgroundImage: NetworkImage(VideoInfoBottomView
-                                .PreservedVideoDataState?.video!.channelThumb ??
-                            ""),
+                    GestureDetector(
+                      onTap: (() async {
+                        // Open The Channel Page using ytExplode
+                        YoutubeExplode ytExplode = YoutubeExplode();
+                        Channel playlistVideos = await ytExplode.channels.get(
+                            VideoInfoBottomView
+                                .PreservedVideoDataState.video!.channelId);
+
+                        // Now we build the channel page based off the provided channel
+                        // ignore: use_build_context_synchronously
+                        Navigator.of(context, rootNavigator: true)
+                            .pushReplacement(
+                          MaterialPageRoute(builder: (context) {
+                            return ChannelView(
+                              localChannel: playlistVideos,
+                            );
+                          }),
+                        );
+                      }),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: CircleAvatar(
+                          backgroundImage: NetworkImage(VideoInfoBottomView
+                                  .PreservedVideoDataState
+                                  .video!
+                                  .channelThumb ??
+                              ""),
+                        ),
                       ),
                     ),
                     Padding(
@@ -274,14 +296,14 @@ Widget getPageBody(BuildContext context) {
                       child: Column(
                         children: [
                           Text(
-                              VideoInfoBottomView.PreservedVideoDataState
-                                      ?.video!.channelName
+                              VideoInfoBottomView.PreservedVideoDataState.video!
+                                      .channelName
                                       ?.toString() ??
                                   "",
                               style: GoogleFonts.dmSans(
                                   fontWeight: FontWeight.bold)),
                           Text(
-                              '${VideoInfoBottomView.PreservedVideoDataState?.video?.subscribeCount ?? ""}',
+                              '${VideoInfoBottomView.PreservedVideoDataState.video?.subscribeCount ?? ""}',
                               style: GoogleFonts.dmSans()),
                         ],
                       ),
@@ -320,24 +342,24 @@ Widget getPageBody(BuildContext context) {
                                 chan.Channel channel = chan.Channel(
                                   id: VideoInfoBottomView
                                           .PreservedVideoDataState
-                                          ?.video!
+                                          .video!
                                           .channelId ??
                                       "",
                                   title: VideoInfoBottomView
                                           .PreservedVideoDataState
-                                          ?.video!
+                                          .video!
                                           .channelName ??
                                       "",
                                   thumbnailURL: VideoInfoBottomView
                                           .PreservedVideoDataState
-                                          ?.video!
+                                          .video!
                                           .channelThumb ??
                                       "",
                                   channelURL:
                                       'https://www.youtube.com/channel/' +
                                           (VideoInfoBottomView
                                                   .PreservedVideoDataState
-                                                  ?.video!
+                                                  .video!
                                                   .channelId ??
                                               ""),
                                 );
@@ -360,7 +382,7 @@ Widget getPageBody(BuildContext context) {
                                       SubscriptionsView.listChannelStatic;
                                   VideoInfoBottomView.SubscribedToChannel =
                                       true;
-                                }else{
+                                } else {
                                   // Already subscribed to channel
                                 }
                               },
@@ -377,7 +399,7 @@ Widget getPageBody(BuildContext context) {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  VideoInfo.name ?? "",
+                  VideoInfo.name,
                   style: GoogleFonts.dmSans(fontWeight: FontWeight.bold),
                 ),
               ),
@@ -387,7 +409,7 @@ Widget getPageBody(BuildContext context) {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   VideoInfoBottomView
-                          .PreservedVideoDataState?.video?.description ??
+                          .PreservedVideoDataState.video?.description ??
                       "This video has no description",
                   style: GoogleFonts.dmSans(),
                 ),
@@ -403,13 +425,21 @@ Widget getPageBody(BuildContext context) {
   );
 }
 
+String getVideoDate(String originalDate) {
+  var length = originalDate.split(" ").length;
+  String modifiedDate = originalDate.split(" ").elementAt(length - 3) + " " +
+      originalDate.split(" ").elementAt(length - 2) + " " +
+      originalDate.split(" ").elementAt(length - 1);
+  return modifiedDate;
+}
+
 // Not used because of outdated API
 Widget getCommentsList() {
   return ListView.builder(
     scrollDirection: Axis.vertical,
     physics: NeverScrollableScrollPhysics(),
     shrinkWrap: true,
-    itemCount: VideoInfo?.comms?.length,
+    itemCount: VideoInfo.comms?.length,
     itemBuilder: (context, index) {
       return Container(
         child: Card(

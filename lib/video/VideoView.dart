@@ -79,10 +79,10 @@ class _VideoViewState extends State<VideoView>
             
             print("VidioID: ${VideoInfo.ID}");
 
-            VideoInfo.author = snapshot.data!.author ?? "";
+            VideoInfo.author = snapshot.data!.author;
             VideoInfo.description =
-                snapshot.data!.description.characters.string ?? "";
-            VideoInfo.name = snapshot.data!.title ?? "";
+                snapshot.data!.description.characters.string;
+            VideoInfo.name = snapshot.data!.title;
             VideoInfo.publishDate = snapshot.data!.publishDate;
             VideoInfo.channelID = snapshot.data!.channelId;
             VideoInfo.isLive = snapshot.data!.isLive;

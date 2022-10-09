@@ -60,6 +60,7 @@ dependencies:
   path_provider: ^2.0.11
   build_runner: 
   hive_generator:
+  flutter_native_splash: ^2.2.11
 
 
 dev_dependencies:

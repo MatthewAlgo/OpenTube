@@ -21,7 +21,7 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
       body: ListView.builder(
         scrollDirection: Axis.vertical,
         shrinkWrap: true,
-        itemCount: VideoInfo.relatedVideos?.length,
+        itemCount: VideoInfo.relatedVideos.length,
         itemBuilder: (context, index) {
           return Container(
             child: Card(
@@ -33,7 +33,7 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
                 dense: false,
                 trailing: Icon(Icons.play_arrow_rounded),
                 title: Text(
-                  VideoInfo.relatedVideos?.elementAt(index)!.title ?? "",
+                  VideoInfo.relatedVideos.elementAt(index).title ?? "",
                   style: GoogleFonts.dmSans(),
                 ),
                 leading: CachedNetworkImage(
