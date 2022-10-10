@@ -46,6 +46,8 @@ class _VideoViewState extends State<VideoView>
 
   @override
   void initState() {
+    VideoInfoBottomView.numberOfCallsFromTabChange = 0;
+    
     _editingcontroller = TextEditingController();
     autoPlay = true;
     _controller = YoutubePlayerController(
@@ -90,7 +92,7 @@ class _VideoViewState extends State<VideoView>
               VideoInfo.isLive = snapshot.data!.isLive;
               VideoInfo.keywords = snapshot.data!.keywords;
     
-              VideoInfoBottomView.numberOfCallsFromTabChange = 0;
+              
     
               return MaterialApp(
                   theme: ThemeData(useMaterial3: true),

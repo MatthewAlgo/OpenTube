@@ -2,12 +2,14 @@ import 'package:anim_search_bar/anim_search_bar.dart';
 import 'package:animation_search_bar/animation_search_bar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_image/network.dart';
 import 'package:flutter_zoom_drawer/config.dart';
+import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:libretube/views/DiscoverView.dart';
 import 'package:libretube/views/TrendingView.dart';
@@ -16,11 +18,13 @@ import 'package:libretube/views/connection/LoadingView.dart';
 import 'package:libretube/views/MainView.dart';
 import 'package:libretube/views/SubscriptionsView.dart';
 import 'package:libretube/video/VideoView.dart';
+import 'package:libretube/views/drawer/DrawerView.dart';
 import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import '../utilities/YouTube.dart';
+import 'package:get/get.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -39,6 +43,7 @@ class _HomePageState extends State<HomePage>
 
   PageController _pageController = PageController();
   ZoomDrawerController _drawerController = ZoomDrawerController();
+  List<IconData> iconList = [];
 
   @override
   void initState() {
@@ -64,8 +69,11 @@ class _HomePageState extends State<HomePage>
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
-          appBar: buildHigherSearchBar(),
-          body: PageView(
+        appBar: buildHigherSearchBar(),
+        body: ZoomDrawer(
+          controller: _drawerController,
+          menuScreen: DrawerView(),
+          mainScreen: PageView(
             physics: NeverScrollableScrollPhysics(),
             controller: _pageController,
             children: <Widget>[
@@ -75,20 +83,28 @@ class _HomePageState extends State<HomePage>
               SubscriptionsView()
             ],
           ),
-          bottomNavigationBar: ConvexAppBar(
-            items: [
-              TabItem(icon: Icons.home, title: 'Home'),
-              TabItem(icon: Icons.trending_up_rounded, title: 'Trending'),
-              TabItem(icon: Icons.map, title: 'Discover'),
-              TabItem(icon: Icons.subscriptions, title: 'Subscriptions'),
-            ],
-            initialActiveIndex: selectedpage,
-            onTap: (int index) {
-              setState(() {
-                _pageController.jumpToPage(index);
-              });
-            },
-          )),
+          borderRadius: 24.0,
+          showShadow: true,
+          angle: -12.0,
+          drawerShadowsBackgroundColor: Colors.grey,
+          slideWidth: MediaQuery.of(context).size.width * 0.65,
+        ),
+        bottomNavigationBar: CurvedNavigationBar(
+          backgroundColor: Colors.blueAccent,
+          color: Colors.red.shade300,
+          items: <Widget>[
+            Icon(Icons.home_rounded, size: 30),
+            Icon(Icons.trending_up_rounded, size: 30),
+            Icon(Icons.map_rounded, size: 30),
+            Icon(Icons.subscriptions_rounded, size: 30),
+          ],
+          onTap: (index) {
+            //Handle button tap
+            selectedpage = index;
+            _pageController.jumpToPage(index);
+          },
+        ),
+      ),
     );
   }
 
@@ -119,7 +135,7 @@ class _HomePageState extends State<HomePage>
                 onSuffixTap: () {
                   selectedpage = 0;
                   _pageController.jumpToPage(0); // Go to homepage and refresh
-                  setState(() async {  
+                  setState(() async {
                     await _refreshPage();
                   });
                 },
@@ -139,6 +155,11 @@ class _HomePageState extends State<HomePage>
               RawMaterialButton(
                 onPressed: () {
                   // Open a drawer or a view
+                  if (_drawerController.isOpen!()) {
+                    _drawerController.close!();
+                  } else {
+                    _drawerController.open!();
+                  }
                 },
                 elevation: 2.0,
                 fillColor: Colors.white,

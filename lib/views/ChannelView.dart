@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:libretube/utilities/YouTube.dart';
 import 'package:libretube/views/connection/ErrorView.dart';
 import 'package:libretube/views/connection/LoadingView.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as ytExp;
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
@@ -57,9 +58,14 @@ class _ChannelViewState extends State<ChannelView> {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
-                  child: Image.network(
-                    widget.localChannel.bannerUrl,
-                    fit: BoxFit.cover,
+                  child: CachedNetworkImage(
+                    imageUrl: widget.localChannel.bannerUrl,
+                    placeholder: (context, url) =>
+                        LoadingAnimationWidget.horizontalRotatingDots(
+                      color: Colors.blue,
+                      size: 70,
+                    ),
+                    errorWidget: (context, url, error) => Icon(Icons.error),
                   ),
                 ),
                 Expanded(

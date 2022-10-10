@@ -8,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_image/network.dart';
+import 'package:flutter_zoom_drawer/config.dart';
+import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:libretube/views/HomePage.dart';
@@ -49,11 +51,11 @@ class _MainViewState extends State<MainView>
   final ScrollController controller = ScrollController();
   static bool comingFromFetch = false;
 
+
   @override
   void initState() {
     super.initState();
     var focusNode = FocusNode();
-
     controller.addListener(() async {
       if (controller.position.atEdge &&
           !(controller.position.pixels == 0) &&
@@ -75,6 +77,7 @@ class _MainViewState extends State<MainView>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
@@ -86,7 +89,6 @@ class _MainViewState extends State<MainView>
           },
           valueListenable: MainView.wannaRebuild,
         ),
-        
       ),
     );
   }
@@ -265,5 +267,4 @@ class _MainViewState extends State<MainView>
     });
     return VideosSearchedList;
   }
-
 }

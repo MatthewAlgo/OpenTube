@@ -62,6 +62,8 @@ dependencies:
   hive_generator:
   flutter_native_splash: ^2.2.11
   flutter_zoom_drawer: ^3.0.3
+  get: ^4.6.5
+  curved_navigation_bar: ^1.0.3
 
 
 dev_dependencies:
