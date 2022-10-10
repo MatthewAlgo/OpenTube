@@ -69,7 +69,7 @@ class _DiscoverViewState extends State<DiscoverView> {
               ],
             ),
           ))),
-      backgroundColor: Colors.pink.shade100,
+      backgroundColor: Colors.lightBlue.shade100,
       body: Center(
           child: Text(
         'Cart Page',

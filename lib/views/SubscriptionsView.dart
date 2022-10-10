@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:libretube/utilities/Channel.dart' as chan;
 import 'package:libretube/utilities/LocalStorageRepo.dart';
 import 'package:libretube/views/ChannelView.dart';
+import 'package:libretube/views/connection/EmptyPage.dart';
 import 'package:youtube_data_api/models/channel.dart' as datachan;
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as ytExp;
 
@@ -46,64 +47,15 @@ class _SubscriptionsViewState extends State<SubscriptionsView> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-        valueListenable: SubscriptionsView.listChannelStaticNotifier,
-        builder: (context, value, _) {
-          return Scaffold(
-            appBar: PreferredSize(
-                preferredSize: const Size(double.infinity, 65),
-                child: SafeArea(
-                    child: Container(
-                  decoration: const BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 5,
-                            spreadRadius: 0,
-                            offset: Offset(0, 5))
-                      ],
-                      borderRadius: BorderRadius.all(Radius.circular(20))),
-                  alignment: Alignment.center,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      AnimSearchBar(
-                        suffixIcon: Icon(Icons.send),
-                        prefixIcon: Icon(Icons.search_outlined),
-                        width: MediaQuery.of(context).size.width,
-                        textController: _editingcontroller,
-                        onSuffixTap: () {},
-                      ),
-                      Expanded(
-                        child: Center(
-                            child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Text(
-                            "LibreTube",
-                            maxLines: 1,
-                            style: GoogleFonts.sacramento(fontSize: 30),
-                            overflow: TextOverflow.fade,
-                          ),
-                        )),
-                      ),
-                      RawMaterialButton(
-                        onPressed: () {
-                          // Open a drawer or a view
-                        },
-                        elevation: 2.0,
-                        fillColor: Colors.white,
-                        child: Icon(
-                          Icons.menu,
-                          size: 35.0,
-                        ),
-                        shape: CircleBorder(),
-                      ),
-                    ],
-                  ),
-                ))),
-            backgroundColor: Colors.pink.shade100,
-            body: Scaffold(
+    if (SubscriptionsView.listChannelStatic.length == 0) {
+      return const EmptyPage();
+    } else {
+      return ValueListenableBuilder(
+          valueListenable: SubscriptionsView.listChannelStaticNotifier,
+          builder: (context, value, _) {
+            return Scaffold(
+              appBar: buildHigherSearchBar(),
+              backgroundColor: Colors.lightBlue.shade100,
               body: ListView.builder(
                 scrollDirection: Axis.vertical,
                 shrinkWrap: true,
@@ -126,16 +78,21 @@ class _SubscriptionsViewState extends State<SubscriptionsView> {
                               .title,
                           style: GoogleFonts.dmSans(),
                         ),
-                        leading: CachedNetworkImage(
-                          imageUrl: SubscriptionsView.listChannelStatic
-                              .elementAt(index)
-                              .thumbnailURL,
-                          progressIndicatorBuilder:
-                              (context, url, downloadProgress) =>
-                                  CircularProgressIndicator(
-                                      value: downloadProgress.progress),
-                          errorWidget: (context, url, error) =>
-                              Icon(Icons.error),
+                        leading: Container(
+                          decoration: new BoxDecoration(
+                              shape: BoxShape.circle,
+                          ),
+                          child: CachedNetworkImage(
+                            imageUrl: SubscriptionsView.listChannelStatic
+                                .elementAt(index)
+                                .thumbnailURL,
+                            progressIndicatorBuilder:
+                                (context, url, downloadProgress) =>
+                                    CircularProgressIndicator(
+                                        value: downloadProgress.progress),
+                            errorWidget: (context, url, error) =>
+                                Icon(Icons.error),
+                          ),
                         ),
                         onTap: (() async {
                           // Open The Channel Page using ytExplode
@@ -162,9 +119,64 @@ class _SubscriptionsViewState extends State<SubscriptionsView> {
                   );
                 },
               ),
-            ),
-          );
-        });
+            );
+          });
+    }
+  }
+
+  PreferredSizeWidget buildHigherSearchBar() {
+    return PreferredSize(
+        preferredSize: const Size(double.infinity, 65),
+        child: SafeArea(
+            child: Container(
+          decoration: const BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 5,
+                    spreadRadius: 0,
+                    offset: Offset(0, 5))
+              ],
+              borderRadius: BorderRadius.all(Radius.circular(20))),
+          alignment: Alignment.center,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              AnimSearchBar(
+                suffixIcon: Icon(Icons.send),
+                prefixIcon: Icon(Icons.search_outlined),
+                width: MediaQuery.of(context).size.width,
+                textController: _editingcontroller,
+                onSuffixTap: () {},
+              ),
+              Expanded(
+                child: Center(
+                    child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    "LibreTube",
+                    maxLines: 1,
+                    style: GoogleFonts.sacramento(fontSize: 30),
+                    overflow: TextOverflow.fade,
+                  ),
+                )),
+              ),
+              RawMaterialButton(
+                onPressed: () {
+                  // Open a drawer or a view
+                },
+                elevation: 2.0,
+                fillColor: Colors.white,
+                child: Icon(
+                  Icons.menu,
+                  size: 35.0,
+                ),
+                shape: CircleBorder(),
+              ),
+            ],
+          ),
+        )));
   }
 
   Widget buildUnSubscribeButton(chan.Channel channelLocal) {
@@ -214,9 +226,11 @@ class _SubscriptionsViewState extends State<SubscriptionsView> {
                           localStorageRepository.getChannelList(box);
                       SubscriptionsView.listChannelStaticNotifier.value =
                           SubscriptionsView.listChannelStatic;
-                      VideoInfoBottomView.SubscribedToChannel = true;
+                      // Set the subscribed to channel variable equal to true
+                      
                       // ignore: use_build_context_synchronously
                       Navigator.pop(context, 'OK');
+                      setState(() { });
                     },
                     child: const Text('OK'),
                   ),

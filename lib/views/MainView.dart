@@ -10,10 +10,10 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_image/network.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-import 'package:libretube/views/NoResultsView.dart';
+import 'package:libretube/views/connection/NoResultsView.dart';
 import 'package:libretube/views/TrendingView.dart';
-import 'package:libretube/views/ErrorView.dart';
-import 'package:libretube/views/LoadingView.dart';
+import 'package:libretube/views/connection/ErrorView.dart';
+import 'package:libretube/views/connection/LoadingView.dart';
 import 'package:libretube/views/SubscriptionsView.dart';
 import 'package:libretube/video/VideoView.dart';
 import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
@@ -160,6 +160,7 @@ class _MainViewState extends State<MainView>
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
+        backgroundColor: Colors.lightBlue.shade100,
         resizeToAvoidBottomInset: false,
         body: ValueListenableBuilder<bool>(
           builder: (BuildContext context, bool value, Widget? child) {

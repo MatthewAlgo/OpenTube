@@ -10,9 +10,9 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:libretube/video/SimilarVideosView.dart';
 import 'package:libretube/video/VideoInfoBottom.dart';
-import 'package:libretube/views/ErrorView.dart';
+import 'package:libretube/views/connection/ErrorView.dart';
 import 'package:libretube/views/HomePage.dart';
-import 'package:libretube/views/LoadingView.dart';
+import 'package:libretube/views/connection/LoadingView.dart';
 import 'package:youtube_data_api/models/channel.dart' as chandata;
 import 'package:youtube_data_api/models/video.dart' as viddata;
 import 'package:youtube_data_api/models/video_data.dart';
@@ -88,7 +88,7 @@ class _VideoViewState extends State<VideoView>
             VideoInfo.isLive = snapshot.data!.isLive;
             VideoInfo.keywords = snapshot.data!.keywords;
 
-            VideoInfoBottomView.NumberOfCallsFromTabChange = 0;
+            VideoInfoBottomView.numberOfCallsFromTabChange = 0;
 
             return MaterialApp(
                 theme: ThemeData(useMaterial3: true),

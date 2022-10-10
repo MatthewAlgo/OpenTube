@@ -90,7 +90,7 @@ class _TrendingViewState extends State<TrendingView> {
               ],
             ),
           ))),
-      backgroundColor: Colors.greenAccent,
+      backgroundColor: Colors.lightBlue.shade100,
       body: BuildCards(context, TrendingView.videoListTrending),
     );
   }

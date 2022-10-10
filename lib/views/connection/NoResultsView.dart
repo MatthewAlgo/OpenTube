@@ -16,7 +16,7 @@ class _NoResultsViewState extends State<NoResultsView> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.pink.shade100,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
