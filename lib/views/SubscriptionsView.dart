@@ -19,6 +19,7 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart' as ytExp;
 import 'dart:developer' as developer;
 
 import '../video/VideoInfoBottom.dart';
+import 'HomePage.dart';
 
 class SubscriptionsView extends StatefulWidget {
   SubscriptionsView({Key? key}) : super(key: key);
@@ -54,7 +55,6 @@ class _SubscriptionsViewState extends State<SubscriptionsView> {
           valueListenable: SubscriptionsView.listChannelStaticNotifier,
           builder: (context, value, _) {
             return Scaffold(
-              appBar: buildHigherSearchBar(),
               backgroundColor: Colors.lightBlue.shade100,
               body: ListView.builder(
                 scrollDirection: Axis.vertical,
@@ -80,7 +80,7 @@ class _SubscriptionsViewState extends State<SubscriptionsView> {
                         ),
                         leading: Container(
                           decoration: new BoxDecoration(
-                              shape: BoxShape.circle,
+                            shape: BoxShape.circle,
                           ),
                           child: CachedNetworkImage(
                             imageUrl: SubscriptionsView.listChannelStatic
@@ -122,61 +122,6 @@ class _SubscriptionsViewState extends State<SubscriptionsView> {
             );
           });
     }
-  }
-
-  PreferredSizeWidget buildHigherSearchBar() {
-    return PreferredSize(
-        preferredSize: const Size(double.infinity, 65),
-        child: SafeArea(
-            child: Container(
-          decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 5,
-                    spreadRadius: 0,
-                    offset: Offset(0, 5))
-              ],
-              borderRadius: BorderRadius.all(Radius.circular(20))),
-          alignment: Alignment.center,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              AnimSearchBar(
-                suffixIcon: Icon(Icons.send),
-                prefixIcon: Icon(Icons.search_outlined),
-                width: MediaQuery.of(context).size.width,
-                textController: _editingcontroller,
-                onSuffixTap: () {},
-              ),
-              Expanded(
-                child: Center(
-                    child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Text(
-                    "LibreTube",
-                    maxLines: 1,
-                    style: GoogleFonts.sacramento(fontSize: 30),
-                    overflow: TextOverflow.fade,
-                  ),
-                )),
-              ),
-              RawMaterialButton(
-                onPressed: () {
-                  // Open a drawer or a view
-                },
-                elevation: 2.0,
-                fillColor: Colors.white,
-                child: Icon(
-                  Icons.menu,
-                  size: 35.0,
-                ),
-                shape: CircleBorder(),
-              ),
-            ],
-          ),
-        )));
   }
 
   Widget buildUnSubscribeButton(chan.Channel channelLocal) {
@@ -227,10 +172,10 @@ class _SubscriptionsViewState extends State<SubscriptionsView> {
                       SubscriptionsView.listChannelStaticNotifier.value =
                           SubscriptionsView.listChannelStatic;
                       // Set the subscribed to channel variable equal to true
-                      
+
                       // ignore: use_build_context_synchronously
                       Navigator.pop(context, 'OK');
-                      setState(() { });
+                      setState(() {});
                     },
                     child: const Text('OK'),
                   ),

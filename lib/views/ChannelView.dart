@@ -9,6 +9,7 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart' as ytExp;
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import '../video/VideoView.dart';
+import 'HomePage.dart';
 import 'MainView.dart';
 
 class ChannelView extends StatefulWidget {
@@ -41,58 +42,7 @@ class _ChannelViewState extends State<ChannelView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-          preferredSize: const Size(double.infinity, 65),
-          child: SafeArea(
-              child: Container(
-            decoration: const BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 5,
-                      spreadRadius: 0,
-                      offset: Offset(0, 5))
-                ],
-                borderRadius: BorderRadius.all(Radius.circular(20))),
-            alignment: Alignment.center,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                AnimSearchBar(
-                  suffixIcon: Icon(Icons.send),
-                  prefixIcon: Icon(Icons.search_outlined),
-                  width: MediaQuery.of(context).size.width,
-                  textController: _textEditingController,
-                  onSuffixTap: () {},
-                ),
-                Expanded(
-                  child: Center(
-                      child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Text(
-                      "LibreTube",
-                      maxLines: 1,
-                      style: GoogleFonts.sacramento(fontSize: 30),
-                      overflow: TextOverflow.fade,
-                    ),
-                  )),
-                ),
-                RawMaterialButton(
-                  onPressed: () {
-                    // Open a drawer or a view
-                  },
-                  elevation: 2.0,
-                  fillColor: Colors.white,
-                  child: Icon(
-                    Icons.menu,
-                    size: 35.0,
-                  ),
-                  shape: CircleBorder(),
-                ),
-              ],
-            ),
-          ))),
+      appBar: buildTopAppBar(),
       backgroundColor: Colors.pink.shade100,
       body: FutureBuilder<ChannelUploadsList>(
         future: loadVideosFromChannel(),
@@ -309,8 +259,8 @@ class _ChannelViewState extends State<ChannelView> {
                                         textStyle:
                                             const TextStyle(fontSize: 20),
                                       ),
-                                      onPressed: () =>
-                                          _fetchNewData(snapshot.data!), // Currently not working (assertion on invalid null)
+                                      onPressed: () => _fetchNewData(snapshot
+                                          .data!), // Currently not working (assertion on invalid null)
                                       child: const Text('Load More'),
                                     ),
                                   ],
@@ -347,5 +297,64 @@ class _ChannelViewState extends State<ChannelView> {
     listVideos = await appendToChannelList(listVideos);
     MainView.loadingState = false;
     setState(() {});
+  }
+
+  PreferredSizeWidget buildTopAppBar() {
+    return PreferredSize(
+        preferredSize: const Size(double.infinity, 65),
+        child: SafeArea(
+            child: Container(
+          decoration: const BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 5,
+                    spreadRadius: 0,
+                    offset: Offset(0, 5))
+              ],
+              borderRadius: BorderRadius.all(Radius.circular(20))),
+          alignment: Alignment.center,
+          child: Row(
+            children: <Widget>[
+              AnimSearchBar(
+                suffixIcon: Icon(Icons.send),
+                prefixIcon: Icon(Icons.search_outlined),
+                width: MediaQuery.of(context).size.width,
+                textController: _textEditingController,
+                onSuffixTap: () {
+                  Navigator.pop(context);
+                  setState(() async {
+                    HomePage.editingController = _textEditingController;
+                  });
+                },
+              ),
+              Expanded(
+                child: Center(
+                    child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    "LibreTube",
+                    maxLines: 1,
+                    style: GoogleFonts.sacramento(fontSize: 30),
+                    overflow: TextOverflow.fade,
+                  ),
+                )),
+              ),
+              RawMaterialButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                elevation: 2.0,
+                fillColor: Colors.white,
+                child: Icon(
+                  Icons.arrow_circle_right_rounded,
+                  size: 35.0,
+                ),
+                shape: CircleBorder(),
+              )
+            ],
+          ),
+        )));
   }
 }

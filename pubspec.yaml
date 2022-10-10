@@ -61,6 +61,7 @@ dependencies:
   build_runner: 
   hive_generator:
   flutter_native_splash: ^2.2.11
+  flutter_zoom_drawer: ^3.0.3
 
 
 dev_dependencies:

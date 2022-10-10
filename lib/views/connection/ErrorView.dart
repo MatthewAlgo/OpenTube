@@ -25,7 +25,7 @@ class _ErrorViewState extends State<ErrorView> {
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text("Error", style: GoogleFonts.sacramento(fontSize: 30)),
+              child: Text("Error. Try again later", style: GoogleFonts.sacramento(fontSize: 30)),
             ),
             Padding(
               padding: const EdgeInsets.all(24),

@@ -10,6 +10,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_image/network.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
+import 'package:libretube/views/HomePage.dart';
 import 'package:libretube/views/connection/NoResultsView.dart';
 import 'package:libretube/views/TrendingView.dart';
 import 'package:libretube/views/connection/ErrorView.dart';
@@ -43,7 +44,6 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView>
     with AutomaticKeepAliveClientMixin<MainView> {
-  late final _editingcontroller;
   late VideoSearchList VideosSearched;
   late List<Video> VideosSearchedList;
   final ScrollController controller = ScrollController();
@@ -53,99 +53,18 @@ class _MainViewState extends State<MainView>
   void initState() {
     super.initState();
     var focusNode = FocusNode();
-    _editingcontroller = TextEditingController();
 
     controller.addListener(() async {
       if (controller.position.atEdge &&
           !(controller.position.pixels == 0) &&
           !MainView.loadingState) {
         await _fetchNewData();
-        print("Load more data");
       }
     });
   }
 
   @override
   bool get wantKeepAlive => true;
-
-  Future _fetchNewData() async {
-    MainView.loadingState = true;
-    VideosSearched = await appendToSearchList(VideosSearched);
-    VideosSearchedList = assignData();
-    MainView.loadingState = false;
-    comingFromFetch = true;
-    setState(() {});
-  }
-
-  List<Video> assignData() {
-    List<Video> myVideoList = [];
-    var videoIterator = VideosSearched.iterator;
-    while (videoIterator.moveNext()) {
-      myVideoList.add(videoIterator.current);
-    }
-    VideosSearchedList = myVideoList;
-    return myVideoList;
-  }
-
-  Future<List<Video>> _updateState() async {
-    // Function used to fill search and user interaction buffers
-    LocalStorageRepository localStorageRepository = LocalStorageRepository();
-    Box box = await localStorageRepository.openBox();
-    List<chan.Channel> channels = localStorageRepository.getChannelList(box);
-    SubscriptionsView.listChannelStatic = channels; // Fill the static variable
-    SubscriptionsList.subscriptionsChannel =
-        channels; // Fill the buffer for the channels
-    SubscriptionsView.listChannelStaticNotifier.value = channels;
-
-    try {
-      MainView.loadingState = true;
-      if (!comingFromFetch) {
-        MainView.searchQuery = _editingcontroller.text ?? "";
-        VideosSearched = await getSearch(MainView.searchQuery, context);
-        VideosSearchedList = assignData();
-
-        dataapi.YoutubeDataApi youtubeDataApi = dataapi.YoutubeDataApi();
-        List<vid.Video> trendingMusicVideos =
-            await youtubeDataApi.fetchTrendingMusic();
-        List<vid.Video> trendingGamingVideos =
-            await youtubeDataApi.fetchTrendingGaming();
-        List<vid.Video> trendingMoviesVideos =
-            await youtubeDataApi.fetchTrendingMovies();
-
-        TrendingView.videoListTrending =
-            trendingMusicVideos; // Assign the variables
-
-        for (int i = 0; i < trendingGamingVideos.length; ++i) {
-          TrendingView.videoListTrending.add(trendingGamingVideos.elementAt(i));
-        }
-        for (int i = 0; i < trendingMoviesVideos.length; ++i) {
-          TrendingView.videoListTrending.add(trendingMoviesVideos.elementAt(i));
-        }
-        TrendingView.videoListTrending
-            .shuffle(); // Make the list of elements and mix the categories -> for now
-
-      } else {
-        comingFromFetch = false;
-      }
-      MainView.loadingState = false;
-      return VideosSearchedList;
-    } on Exception catch (e) {
-      print("Error: ${e.toString()}");
-      return VideosSearchedList;
-    }
-  }
-
-  Future<List<Video>> _refreshPage() async {
-    // Rebuild the widget
-    MainView.wannaRebuild.value = true;
-    MainView.wannaRebuild.value = false;
-    MainView.init_counter_from_rebuild = 0;
-
-    setState(() async {
-      await _updateState();
-    });
-    return VideosSearchedList;
-  }
 
   @override
   void dispose() {
@@ -156,7 +75,6 @@ class _MainViewState extends State<MainView>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
@@ -168,62 +86,7 @@ class _MainViewState extends State<MainView>
           },
           valueListenable: MainView.wannaRebuild,
         ),
-        appBar: PreferredSize(
-            preferredSize: const Size(double.infinity, 65),
-            child: SafeArea(
-                child: Container(
-              decoration: const BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 5,
-                        spreadRadius: 0,
-                        offset: Offset(0, 5))
-                  ],
-                  borderRadius: BorderRadius.all(Radius.circular(20))),
-              alignment: Alignment.center,
-              child: Row(
-                children: <Widget>[
-                  AnimSearchBar(
-                    suffixIcon: Icon(Icons.send),
-                    prefixIcon: Icon(Icons.search_outlined),
-                    width: MediaQuery.of(context).size.width,
-                    textController: _editingcontroller,
-                    closeSearchOnSuffixTap: true,
-                    onSuffixTap: () {
-                      setState(() async {
-                        await _refreshPage();
-                      });
-                    },
-                  ),
-                  Expanded(
-                    child: Center(
-                        child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Text(
-                        "LibreTube",
-                        maxLines: 1,
-                        style: GoogleFonts.sacramento(fontSize: 30),
-                        overflow: TextOverflow.fade,
-                      ),
-                    )),
-                  ),
-                  RawMaterialButton(
-                    onPressed: () {
-                      // Open a drawer or a view
-                    },
-                    elevation: 2.0,
-                    fillColor: Colors.white,
-                    child: Icon(
-                      Icons.menu,
-                      size: 35.0,
-                    ),
-                    shape: CircleBorder(),
-                  )
-                ],
-              ),
-            ))),
+        
       ),
     );
   }
@@ -309,7 +172,7 @@ class _MainViewState extends State<MainView>
               return const ErrorView();
             } else if (snapshot.hasData) {
               return BuildCards(context, VideosSearchedList);
-            } else if (snapshot.data?.length == 0) {
+            } else if (snapshot.data?.isEmpty ?? true) {
               return NoResultsView();
             } else {
               return ErrorView();
@@ -323,4 +186,84 @@ class _MainViewState extends State<MainView>
       return BuildCards(context, VideosSearchedList);
     }
   }
+
+  Future _fetchNewData() async {
+    MainView.loadingState = true;
+    VideosSearched = await appendToSearchList(VideosSearched);
+    VideosSearchedList = assignData();
+    MainView.loadingState = false;
+    comingFromFetch = true;
+    setState(() {});
+  }
+
+  List<Video> assignData() {
+    List<Video> myVideoList = [];
+    var videoIterator = VideosSearched.iterator;
+    while (videoIterator.moveNext()) {
+      myVideoList.add(videoIterator.current);
+    }
+    VideosSearchedList = myVideoList;
+    return myVideoList;
+  }
+
+  Future<List<Video>> _updateState() async {
+    // Function used to fill search and user interaction buffers
+    LocalStorageRepository localStorageRepository = LocalStorageRepository();
+    Box box = await localStorageRepository.openBox();
+    List<chan.Channel> channels = localStorageRepository.getChannelList(box);
+    SubscriptionsView.listChannelStatic = channels; // Fill the static variable
+    SubscriptionsList.subscriptionsChannel =
+        channels; // Fill the buffer for the channels
+    SubscriptionsView.listChannelStaticNotifier.value = channels;
+
+    try {
+      MainView.loadingState = true;
+      if (!comingFromFetch) {
+        MainView.searchQuery = HomePage.editingController.text ?? "";
+        VideosSearched = await getSearch(MainView.searchQuery, context);
+        VideosSearchedList = assignData();
+
+        dataapi.YoutubeDataApi youtubeDataApi = dataapi.YoutubeDataApi();
+        List<vid.Video> trendingMusicVideos =
+            await youtubeDataApi.fetchTrendingMusic();
+        List<vid.Video> trendingGamingVideos =
+            await youtubeDataApi.fetchTrendingGaming();
+        List<vid.Video> trendingMoviesVideos =
+            await youtubeDataApi.fetchTrendingMovies();
+
+        TrendingView.videoListTrending =
+            trendingMusicVideos; // Assign the variables
+
+        for (int i = 0; i < trendingGamingVideos.length; ++i) {
+          TrendingView.videoListTrending.add(trendingGamingVideos.elementAt(i));
+        }
+        for (int i = 0; i < trendingMoviesVideos.length; ++i) {
+          TrendingView.videoListTrending.add(trendingMoviesVideos.elementAt(i));
+        }
+        TrendingView.videoListTrending
+            .shuffle(); // Make the list of elements and mix the categories -> for now
+
+      } else {
+        comingFromFetch = false;
+      }
+      MainView.loadingState = false;
+      return VideosSearchedList;
+    } on Exception catch (e) {
+      print("Error: ${e.toString()}");
+      return VideosSearchedList;
+    }
+  }
+
+  Future<List<Video>> _refreshPage() async {
+    // Rebuild the widget
+    MainView.wannaRebuild.value = true;
+    MainView.wannaRebuild.value = false;
+    MainView.init_counter_from_rebuild = 0;
+
+    setState(() async {
+      await _updateState();
+    });
+    return VideosSearchedList;
+  }
+
 }

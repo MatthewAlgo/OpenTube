@@ -68,101 +68,108 @@ class _VideoViewState extends State<VideoView>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return FutureBuilder(
-        future: _getVideoInformation(widget.videoId),
-        builder: (BuildContext context, AsyncSnapshot<exp.Video> snapshot) {
-          if (snapshot.hasData) {
-            // Populate static video info to be passed further
-            VideoInfo.video = snapshot.data!;
-            // Other elements to be easier to access
-            VideoInfo.ID = widget.videoId;
-            
-            print("VidioID: ${VideoInfo.ID}");
-
-            VideoInfo.author = snapshot.data!.author;
-            VideoInfo.description =
-                snapshot.data!.description.characters.string;
-            VideoInfo.name = snapshot.data!.title;
-            VideoInfo.publishDate = snapshot.data!.publishDate;
-            VideoInfo.channelID = snapshot.data!.channelId;
-            VideoInfo.isLive = snapshot.data!.isLive;
-            VideoInfo.keywords = snapshot.data!.keywords;
-
-            VideoInfoBottomView.numberOfCallsFromTabChange = 0;
-
-            return MaterialApp(
-                theme: ThemeData(useMaterial3: true),
-                home: Scaffold(
-                  body: videoAppBody(),
-                  appBar: MediaQuery.of(context).orientation ==
-                          Orientation.landscape
-                      ? null // show nothing in lanscape mode
-                      : PreferredSize(
-                          preferredSize: const Size(double.infinity, 65),
-                          child: SafeArea(
-                              child: Container(
-                            decoration: const BoxDecoration(
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                      color: Colors.black26,
-                                      blurRadius: 5,
-                                      spreadRadius: 0,
-                                      offset: Offset(0, 5))
-                                ],
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(20))),
-                            alignment: Alignment.center,
-                            child: Row(
-                              children: <Widget>[
-                                AnimSearchBar(
-                                  suffixIcon: Icon(Icons.send),
-                                  prefixIcon: Icon(Icons.search_outlined),
-                                  width: MediaQuery.of(context).size.width,
-                                  textController: _editingcontroller,
-                                  onSuffixTap: () {
-                                    // setState(() {
-                                    //   _updateState();
-                                    // });
-                                  },
-                                ),
-                                Expanded(
-                                  child: Center(
-                                      child: Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(
-                                      "LibreTube",
-                                      maxLines: 1,
-                                      style:
-                                          GoogleFonts.sacramento(fontSize: 30),
-                                      overflow: TextOverflow.fade,
-                                    ),
-                                  )),
-                                ),
-                                RawMaterialButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  elevation: 2.0,
-                                  fillColor: Colors.white,
-                                  child: Icon(
-                                    Icons.arrow_circle_right_rounded,
-                                    size: 35.0,
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: FutureBuilder(
+          future: _getVideoInformation(widget.videoId),
+          builder: (BuildContext context, AsyncSnapshot<exp.Video> snapshot) {
+            if (snapshot.hasData) {
+              // Populate static video info to be passed further
+              VideoInfo.video = snapshot.data!;
+              // Other elements to be easier to access
+              VideoInfo.ID = widget.videoId;
+    
+              print("VidioID: ${VideoInfo.ID}");
+    
+              VideoInfo.author = snapshot.data!.author;
+              VideoInfo.description =
+                  snapshot.data!.description.characters.string;
+              VideoInfo.name = snapshot.data!.title;
+              VideoInfo.publishDate = snapshot.data!.publishDate;
+              VideoInfo.channelID = snapshot.data!.channelId;
+              VideoInfo.isLive = snapshot.data!.isLive;
+              VideoInfo.keywords = snapshot.data!.keywords;
+    
+              VideoInfoBottomView.numberOfCallsFromTabChange = 0;
+    
+              return MaterialApp(
+                  theme: ThemeData(useMaterial3: true),
+                  home: Scaffold(
+                    resizeToAvoidBottomInset: false,
+                    body: videoAppBody(),
+                    appBar: MediaQuery.of(context).orientation ==
+                            Orientation.landscape
+                        ? null // show nothing in lanscape mode
+                        : PreferredSize(
+                            preferredSize: const Size(double.infinity, 65),
+                            child: SafeArea(
+                                child: Container(
+                              decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.black26,
+                                        blurRadius: 5,
+                                        spreadRadius: 0,
+                                        offset: Offset(0, 5))
+                                  ],
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(20))),
+                              alignment: Alignment.center,
+                              child: Row(
+                                children: <Widget>[
+                                  AnimSearchBar(
+                                    suffixIcon: Icon(Icons.send),
+                                    prefixIcon: Icon(Icons.search_outlined),
+                                    width: MediaQuery.of(context).size.width,
+                                    textController: _editingcontroller,
+                                    onSuffixTap: () {
+                                      Navigator.pop(context);
+                                      setState(() async {
+                                        HomePage.editingController =
+                                            _editingcontroller;
+                                        
+                                      });
+                                    },
                                   ),
-                                  shape: CircleBorder(),
-                                )
-                              ],
-                            ),
-                          ))),
-                ));
-          } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return const LoadingView();
-          } else if (snapshot.hasError) {
-            return const ErrorView();
-          } else {
-            return const ErrorView();
-          }
-        });
+                                  Expanded(
+                                    child: Center(
+                                        child: Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        "LibreTube",
+                                        maxLines: 1,
+                                        style:
+                                            GoogleFonts.sacramento(fontSize: 30),
+                                        overflow: TextOverflow.fade,
+                                      ),
+                                    )),
+                                  ),
+                                  RawMaterialButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    elevation: 2.0,
+                                    fillColor: Colors.white,
+                                    child: Icon(
+                                      Icons.arrow_circle_right_rounded,
+                                      size: 35.0,
+                                    ),
+                                    shape: CircleBorder(),
+                                  )
+                                ],
+                              ),
+                            ))),
+                  ));
+            } else if (snapshot.connectionState == ConnectionState.waiting) {
+              return const LoadingView();
+            } else if (snapshot.hasError) {
+              return const ErrorView();
+            } else {
+              return const ErrorView();
+            }
+          }),
+    );
   }
 
   Widget videoAppBody() {

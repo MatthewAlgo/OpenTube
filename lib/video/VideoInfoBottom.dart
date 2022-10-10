@@ -84,6 +84,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
 
   Widget getPageBody(BuildContext context) {
     return Scaffold(
+
       body: Container(
         child: SingleChildScrollView(
           physics: ScrollPhysics(),
