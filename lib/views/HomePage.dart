@@ -1,5 +1,6 @@
 import 'package:anim_search_bar/anim_search_bar.dart';
 import 'package:animation_search_bar/animation_search_bar.dart';
+import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
@@ -74,7 +75,9 @@ class _HomePageState extends State<HomePage>
           controller: _drawerController,
           menuScreen: DrawerView(),
           mainScreen: PageView(
-            physics: NeverScrollableScrollPhysics(),
+            onPageChanged: (index) {
+              setState(() => selectedpage = index);
+            },
             controller: _pageController,
             children: <Widget>[
               MainView(),
@@ -89,21 +92,39 @@ class _HomePageState extends State<HomePage>
           drawerShadowsBackgroundColor: Colors.grey,
           slideWidth: MediaQuery.of(context).size.width * 0.65,
         ),
-        bottomNavigationBar: CurvedNavigationBar(
-          backgroundColor: Colors.blueAccent,
-          color: Colors.red.shade300,
-          items: <Widget>[
-            Icon(Icons.home_rounded, size: 30),
-            Icon(Icons.trending_up_rounded, size: 30),
-            Icon(Icons.map_rounded, size: 30),
-            Icon(Icons.subscriptions_rounded, size: 30),
-          ],
-          onTap: (index) {
-            //Handle button tap
-            selectedpage = index;
+        bottomNavigationBar: BottomNavyBar(
+          backgroundColor: Colors.yellow.shade300,
+          selectedIndex: selectedpage,
+          onItemSelected: (index) {
+            setState(() => selectedpage = index);
             _pageController.jumpToPage(index);
+            _pageController.animateToPage(index,
+                duration: Duration(milliseconds: 300), curve: Curves.ease);
           },
+          items: <BottomNavyBarItem>[
+            BottomNavyBarItem(
+              title: Text('Home'),
+              icon: Icon(Icons.home_rounded),
+              textAlign: TextAlign.center
+            ),
+            BottomNavyBarItem(
+              title: Text('Trending'),
+              icon: Icon(Icons.trending_up_rounded),
+              textAlign: TextAlign.center
+            ),
+            BottomNavyBarItem(
+              title: Text('Discover'),
+              icon: Icon(Icons.map_rounded),
+              textAlign: TextAlign.center
+            ),
+            BottomNavyBarItem(
+              title: Text("Channels"),
+              icon: Icon(Icons.subscriptions_rounded),
+              textAlign: TextAlign.center
+            ),
+          ],
         ),
+        
       ),
     );
   }
@@ -137,6 +158,9 @@ class _HomePageState extends State<HomePage>
                   _pageController.jumpToPage(0); // Go to homepage and refresh
                   setState(() async {
                     await _refreshPage();
+                    _pageController.animateToPage(0,
+                        duration: Duration(milliseconds: 300),
+                        curve: Curves.ease);
                   });
                 },
               ),

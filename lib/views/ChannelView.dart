@@ -60,10 +60,16 @@ class _ChannelViewState extends State<ChannelView> {
                   borderRadius: BorderRadius.circular(8.0),
                   child: CachedNetworkImage(
                     imageUrl: widget.localChannel.bannerUrl,
-                    placeholder: (context, url) =>
-                        LoadingAnimationWidget.horizontalRotatingDots(
-                      color: Colors.blue,
-                      size: 70,
+                    placeholder: (context, url) => Container(
+                      decoration: BoxDecoration(
+                          shape: BoxShape.rectangle,
+                          color: Colors.white),
+                      child: Center(
+                        child: LoadingAnimationWidget.horizontalRotatingDots(
+                          color: Colors.blue,
+                          size: 20,
+                        ),
+                      ),
                     ),
                     errorWidget: (context, url, error) => Icon(Icons.error),
                   ),

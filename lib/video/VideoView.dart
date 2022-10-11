@@ -37,6 +37,7 @@ class _VideoViewState extends State<VideoView>
     initialVideoId: VideoInfo.ID,
   );
   late bool autoPlay;
+  PageController _pageController = PageController();
 
   @override
   bool get wantKeepAlive => true;
@@ -47,7 +48,7 @@ class _VideoViewState extends State<VideoView>
   @override
   void initState() {
     VideoInfoBottomView.numberOfCallsFromTabChange = 0;
-    
+    _pageController = PageController();
     _editingcontroller = TextEditingController();
     autoPlay = true;
     _controller = YoutubePlayerController(
@@ -65,6 +66,9 @@ class _VideoViewState extends State<VideoView>
   @override
   void dispose() {
     super.dispose();
+    _pageController.dispose();
+    _editingcontroller.dispose();
+    _controller.dispose();
   }
 
   @override
@@ -80,9 +84,9 @@ class _VideoViewState extends State<VideoView>
               VideoInfo.video = snapshot.data!;
               // Other elements to be easier to access
               VideoInfo.ID = widget.videoId;
-    
+
               print("VidioID: ${VideoInfo.ID}");
-    
+
               VideoInfo.author = snapshot.data!.author;
               VideoInfo.description =
                   snapshot.data!.description.characters.string;
@@ -91,9 +95,7 @@ class _VideoViewState extends State<VideoView>
               VideoInfo.channelID = snapshot.data!.channelId;
               VideoInfo.isLive = snapshot.data!.isLive;
               VideoInfo.keywords = snapshot.data!.keywords;
-    
-              
-    
+
               return MaterialApp(
                   theme: ThemeData(useMaterial3: true),
                   home: Scaffold(
@@ -130,7 +132,6 @@ class _VideoViewState extends State<VideoView>
                                       setState(() async {
                                         HomePage.editingController =
                                             _editingcontroller;
-                                        
                                       });
                                     },
                                   ),
@@ -141,8 +142,8 @@ class _VideoViewState extends State<VideoView>
                                       child: Text(
                                         "LibreTube",
                                         maxLines: 1,
-                                        style:
-                                            GoogleFonts.sacramento(fontSize: 30),
+                                        style: GoogleFonts.sacramento(
+                                            fontSize: 30),
                                         overflow: TextOverflow.fade,
                                       ),
                                     )),
@@ -186,12 +187,15 @@ class _VideoViewState extends State<VideoView>
             children: [
               player,
               Flexible(
-                child: IndexedStack(
+                child: PageView(
+                  onPageChanged: (index) {
+                    setState(() => selectedpage = index);
+                  },
+                  controller: _pageController,
                   children: <Widget>[
                     VideoInfoBottomView(vidIdent: widget.videoId),
                     SimilarVideosView(),
                   ],
-                  index: selectedpage,
                 ),
               ),
             ],
