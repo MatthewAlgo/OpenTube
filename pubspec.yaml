@@ -65,6 +65,7 @@ dependencies:
   get: ^4.6.5
   curved_navigation_bar: ^1.0.3
   bottom_navy_bar: ^6.0.0
+  flutter_screenutil: ^5.5.4
   
 
 

@@ -23,6 +23,7 @@ class VideoInfoBottomView extends StatefulWidget {
   const VideoInfoBottomView({Key? key, required String this.vidIdent})
       : super(key: key);
   static int numberOfCallsFromTabChange = 0;
+
   final String vidIdent;
 
   @override
@@ -31,7 +32,7 @@ class VideoInfoBottomView extends StatefulWidget {
 
 class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
     with AutomaticKeepAliveClientMixin {
-  late VideoData videoDataLocalGenerated;
+  VideoData? videoDataLocalGenerated;
 
   @override
   bool get wantKeepAlive => true;
@@ -40,12 +41,14 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
   Widget build(BuildContext context) {
     super.build(context);
     VideoInfoBottomView.numberOfCallsFromTabChange++;
-    if (VideoInfoBottomView.numberOfCallsFromTabChange == 1) {
-      return FutureBuilder<VideoData?>(
+    if (VideoInfoBottomView.numberOfCallsFromTabChange == 1 ||
+        videoDataLocalGenerated == null) {
+      // If we don't save our video data inside a variable, then do the api call
+      return FutureBuilder<VideoData>(
           future: fetchNetworkCall(widget.vidIdent),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
-              return getPageBody(context);
+              return getPageBody(context, snapshot);
             } else if (snapshot.connectionState == ConnectionState.waiting) {
               return LoadingView();
             } else {
@@ -53,38 +56,42 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
             }
           });
     } else {
-      return getPageBody(context);
-    }
-  }
-
-  Future<VideoData?> fetchNetworkCall(String Vidid) async {
-    YoutubeDataApi youtubeDataApi = YoutubeDataApi(); // To get channel data
-    var YtExplode = YoutubeExplode();
-
-    // We get the list of comments from the youtube server
-    // var VideoComments =
-    //     await YtExplode.videos.comments.getComments(VideoInfo.video);
-
-    if (VideoInfo != null) {
-      // We assign the data to the static variable
-      // VideoInfo.comms = VideoComments;
-
-      // We call the youtubeDataApi on the same video
-      videoDataLocalGenerated = (await youtubeDataApi.fetchVideoData(Vidid))!;
+      print("Getting page body for bottom view...");
       if (videoDataLocalGenerated != null) {
-        // And get the list of similar videos
-        VideoInfo.relatedVideos =
-            videoDataLocalGenerated.videosList; // Also fill the related videos
+        return getPageBody(context, null);
+      } else {
+        print("The video data was null");
+        throw Exception("VideoData exception");
       }
-      return videoDataLocalGenerated;
-    } else {
-      throw Exception("VideoInfo is null");
     }
   }
 
-  Widget getPageBody(BuildContext context) {
-    return Scaffold(
+  Future<VideoData> fetchNetworkCall(String Vidid) async {
+    YoutubeDataApi youtubeDataApi = YoutubeDataApi(); // To get channel data
+    YoutubeExplode YtExplode = YoutubeExplode();
 
+    // var VideoComments = await YtExplode.videos.comments.getComments(VideoInfo.video);
+    // VideoInfo.comms = VideoComments;
+
+    videoDataLocalGenerated = (await youtubeDataApi.fetchVideoData(Vidid))!;
+    if (videoDataLocalGenerated != null) {
+      VideoInfo.relatedVideos = videoDataLocalGenerated!.videosList;
+      VideoInfo.videoData = videoDataLocalGenerated!;
+
+      YtExplode.close();
+      return videoDataLocalGenerated!;
+    } else {
+      print("The video data was null even after call");
+      return fetchNetworkCall(
+          Vidid); // Recursion until the videoData is not null -> may produce bugs
+    }
+  }
+
+  Widget getPageBody(BuildContext context, AsyncSnapshot? snapshot) {
+    if (snapshot != null) {
+      videoDataLocalGenerated = snapshot.data;
+    }
+    return Scaffold(
       body: Container(
         child: SingleChildScrollView(
           physics: ScrollPhysics(),
@@ -140,7 +147,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                           ), // <-- Icon
                           Text(
                               getVideoDate(
-                                  videoDataLocalGenerated.video!.date ??
+                                  videoDataLocalGenerated!.video!.date ??
                                       "1 Jan. 1970"),
                               style:
                                   GoogleFonts.dmSans(fontSize: 12)), // <-- Text
@@ -154,7 +161,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                         await Share.share(
                           "https://www.youtube.com/watch?v=$videoDataLocalGenerated?.video.videoId}",
                           subject:
-                              "https://www.youtube.com/watch?v=${videoDataLocalGenerated.video!.videoId}",
+                              "https://www.youtube.com/watch?v=${videoDataLocalGenerated!.video!.videoId}",
                           sharePositionOrigin:
                               box!.localToGlobal(Offset.zero) & box.size,
                         );
@@ -260,7 +267,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                           // Open The Channel Page using ytExplode
                           YoutubeExplode ytExplode = YoutubeExplode();
                           Channel playlistVideos = await ytExplode.channels
-                              .get(videoDataLocalGenerated.video!.channelId);
+                              .get(videoDataLocalGenerated!.video!.channelId);
 
                           // Now we build the channel page based off the provided channel
                           // ignore: use_build_context_synchronously
@@ -277,7 +284,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                           padding: const EdgeInsets.all(10.0),
                           child: CircleAvatar(
                             backgroundImage: NetworkImage(
-                                videoDataLocalGenerated.video!.channelThumb ??
+                                videoDataLocalGenerated!.video!.channelThumb ??
                                     ""),
                           ),
                         ),
@@ -287,13 +294,13 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                         child: Column(
                           children: [
                             Text(
-                                videoDataLocalGenerated.video!.channelName
+                                videoDataLocalGenerated!.video!.channelName
                                         ?.toString() ??
                                     "",
                                 style: GoogleFonts.dmSans(
                                     fontWeight: FontWeight.bold)),
                             Text(
-                                '${videoDataLocalGenerated.video?.subscribeCount ?? ""}',
+                                '${videoDataLocalGenerated!.video?.subscribeCount ?? ""}',
                                 style: GoogleFonts.dmSans()),
                           ],
                         ),
@@ -332,20 +339,19 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                                   // Get channel data from Youtube API
 
                                   chan.Channel channel = chan.Channel(
-                                    id: videoDataLocalGenerated
+                                    id: videoDataLocalGenerated!
                                             .video!.channelId ??
                                         "",
-                                    title: videoDataLocalGenerated
+                                    title: videoDataLocalGenerated!
                                             .video!.channelName ??
                                         "",
-                                    thumbnailURL: videoDataLocalGenerated
+                                    thumbnailURL: videoDataLocalGenerated!
                                             .video!.channelThumb ??
                                         "",
                                     channelURL:
                                         'https://www.youtube.com/channel/' +
-                                            (videoDataLocalGenerated
-                                                    .video!
-                                                    .channelId ??
+                                            (videoDataLocalGenerated!
+                                                    .video!.channelId ??
                                                 ""),
                                   );
 
@@ -393,7 +399,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    videoDataLocalGenerated.video?.description ??
+                    videoDataLocalGenerated!.video?.description ??
                         "This video has no description",
                     style: GoogleFonts.dmSans(),
                   ),

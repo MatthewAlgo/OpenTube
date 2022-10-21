@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:anim_search_bar/anim_search_bar.dart';
 import 'package:animation_search_bar/animation_search_bar.dart';
+import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +38,7 @@ class _VideoViewState extends State<VideoView>
     initialVideoId: VideoInfo.ID,
   );
   late bool autoPlay;
-  PageController _pageController = PageController();
+  PageController _pageController = PageController(keepPage: true);
 
   @override
   bool get wantKeepAlive => true;
@@ -203,19 +204,27 @@ class _VideoViewState extends State<VideoView>
           bottomNavigationBar:
               MediaQuery.of(context).orientation == Orientation.landscape
                   ? null // show nothing in lanscape mode
-                  : ConvexAppBar(
-                      items: [
-                        TabItem(icon: Icons.play_arrow, title: 'Now Playing'),
-                        TabItem(
-                            icon: Icons.video_library_rounded,
-                            title: 'Similar Videos'),
-                      ],
-                      initialActiveIndex: selectedpage,
-                      onTap: (int index) {
-                        setState(() {
-                          selectedpage = index;
-                        });
+                  : BottomNavyBar(
+                      backgroundColor: Colors.yellow.shade300,
+                      selectedIndex: selectedpage,
+                      onItemSelected: (index) {
+                        setState(() => selectedpage = index);
+                        _pageController.jumpToPage(index);
+                        _pageController.animateToPage(index,
+                            duration: Duration(milliseconds: 300),
+                            curve: Curves.ease);
                       },
+                      items: <BottomNavyBarItem>[
+                        BottomNavyBarItem(
+                            title: Text('Video Data'),
+                            icon: Icon(Icons.home_rounded),
+                            textAlign: TextAlign.center),
+                        BottomNavyBarItem(
+                            title: Text('Similar Videos'),
+                            icon: Icon(Icons.trending_up_rounded),
+                            textAlign: TextAlign.center),
+                        
+                      ],
                     ),
         );
       },
@@ -245,4 +254,5 @@ class VideoInfo {
   static late UnmodifiableListView<String> keywords;
   static late chandata.Channel videoChannel;
   static late List<viddata.Video> relatedVideos;
+  static late VideoData videoData;
 }

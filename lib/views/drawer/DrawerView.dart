@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:libretube/views/drawer/SavedVideos.dart';
 
 class DrawerView extends StatefulWidget {
   const DrawerView({super.key});
@@ -39,7 +40,12 @@ class _DrawerViewState extends State<DrawerView> {
               title: Text('Video History'),
             ),
             ListTile(
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SavedVideos()),
+                );
+              },
               leading: Icon(Icons.bookmark_rounded),
               title: Text('Saved Videos'),
             ),
