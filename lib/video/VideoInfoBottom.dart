@@ -5,12 +5,18 @@ import 'package:flutter_share/flutter_share.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:libretube/utilities/LocalStorageRepo.dart';
+import 'package:libretube/utilities/VideoUtil.dart';
 import 'package:libretube/views/connection/ErrorView.dart';
 import 'package:libretube/views/connection/LoadingView.dart';
+import 'package:libretube/views/drawer/SavedVideos.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:youtube_data_api/models/video_data.dart';
-import 'package:youtube_data_api/youtube_data_api.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'package:youtube_data_api/youtube_data_api.dart' as data;
+
+// import video from youtube data api
+import 'package:youtube_data_api/models/video.dart' as viddata;
+
+import 'package:youtube_explode_dart/youtube_explode_dart.dart' as explode;
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../utilities/YouTube.dart';
@@ -20,11 +26,18 @@ import 'VideoView.dart';
 import '../utilities/Channel.dart' as chan;
 
 class VideoInfoBottomView extends StatefulWidget {
-  const VideoInfoBottomView({Key? key, required String this.vidIdent})
+  VideoInfoBottomView(
+      {Key? key,
+      required String this.vidIdent,
+      required Future<VideoData> this.videoData})
       : super(key: key);
-  static int numberOfCallsFromTabChange = 0;
 
+  static int numberOfCallsFromTabChange = 0;
   final String vidIdent;
+
+  // Declare static lists of objects that get modified in the VideoInfoBottomView
+  Future<VideoData> videoData;
+  late List<viddata.Video> relatedVideos;
 
   @override
   State<VideoInfoBottomView> createState() => _VideoInfoBottomViewState();
@@ -32,7 +45,12 @@ class VideoInfoBottomView extends StatefulWidget {
 
 class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
     with AutomaticKeepAliveClientMixin {
-  VideoData? videoDataLocalGenerated;
+  List<viddata.Video> relatedVideos = [];
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   bool get wantKeepAlive => true;
@@ -41,8 +59,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
   Widget build(BuildContext context) {
     super.build(context);
     VideoInfoBottomView.numberOfCallsFromTabChange++;
-    if (VideoInfoBottomView.numberOfCallsFromTabChange == 1 ||
-        videoDataLocalGenerated == null) {
+    if (VideoInfoBottomView.numberOfCallsFromTabChange == 1) {
       // If we don't save our video data inside a variable, then do the api call
       return FutureBuilder<VideoData>(
           future: fetchNetworkCall(widget.vidIdent),
@@ -57,40 +74,24 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
           });
     } else {
       print("Getting page body for bottom view...");
-      if (videoDataLocalGenerated != null) {
-        return getPageBody(context, null);
+      // ignore: unnecessary_null_comparison
+      if (widget.videoData != null) {
+        return ErrorView(); // TODO: Fix this
       } else {
         print("The video data was null");
-        throw Exception("VideoData exception");
+        return ErrorView();
       }
     }
   }
 
+  // We do this without being necessary -> performance impact
   Future<VideoData> fetchNetworkCall(String Vidid) async {
-    YoutubeDataApi youtubeDataApi = YoutubeDataApi(); // To get channel data
-    YoutubeExplode YtExplode = YoutubeExplode();
-
-    // var VideoComments = await YtExplode.videos.comments.getComments(VideoInfo.video);
-    // VideoInfo.comms = VideoComments;
-
-    videoDataLocalGenerated = (await youtubeDataApi.fetchVideoData(Vidid))!;
-    if (videoDataLocalGenerated != null) {
-      VideoInfo.relatedVideos = videoDataLocalGenerated!.videosList;
-      VideoInfo.videoData = videoDataLocalGenerated!;
-
-      YtExplode.close();
-      return videoDataLocalGenerated!;
-    } else {
-      print("The video data was null even after call");
-      return fetchNetworkCall(
-          Vidid); // Recursion until the videoData is not null -> may produce bugs
-    }
+    VideoData viddata = await widget.videoData;
+    relatedVideos = viddata.videosList;
+    return viddata;
   }
 
-  Widget getPageBody(BuildContext context, AsyncSnapshot? snapshot) {
-    if (snapshot != null) {
-      videoDataLocalGenerated = snapshot.data;
-    }
+  Widget getPageBody(BuildContext context, AsyncSnapshot snapshot) {
     return Scaffold(
       body: Container(
         child: SingleChildScrollView(
@@ -119,7 +120,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                             padding: const EdgeInsets.all(4.0),
                             child: Icon(Icons.thumb_up_alt_rounded),
                           ), // <-- Icon
-                          Text(videoDataLocalGenerated?.video!.likeCount ?? "",
+                          Text(snapshot.data.video!.likeCount ?? "",
                               style:
                                   GoogleFonts.dmSans(fontSize: 12)), // <-- Text
                         ],
@@ -132,7 +133,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                             padding: const EdgeInsets.all(4.0),
                             child: Icon(Icons.play_circle),
                           ), // <-- Icon
-                          Text(videoDataLocalGenerated?.video!.viewCount ?? "",
+                          Text(snapshot.data.video!.viewCount ?? "",
                               style:
                                   GoogleFonts.dmSans(fontSize: 12)), // <-- Text
                         ],
@@ -147,8 +148,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                           ), // <-- Icon
                           Text(
                               getVideoDate(
-                                  videoDataLocalGenerated!.video!.date ??
-                                      "1 Jan. 1970"),
+                                  snapshot.data.video!.date ?? "1 Jan. 1970"),
                               style:
                                   GoogleFonts.dmSans(fontSize: 12)), // <-- Text
                         ],
@@ -159,9 +159,9 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                         // Define the box for the share item
                         final box = context.findRenderObject() as RenderBox?;
                         await Share.share(
-                          "https://www.youtube.com/watch?v=$videoDataLocalGenerated?.video.videoId}",
+                          "https://www.youtube.com/watch?v=${snapshot.data.video.videoId}",
                           subject:
-                              "https://www.youtube.com/watch?v=${videoDataLocalGenerated!.video!.videoId}",
+                              "https://www.youtube.com/watch?v=${snapshot.data.video!.videoId}",
                           sharePositionOrigin:
                               box!.localToGlobal(Offset.zero) & box.size,
                         );
@@ -225,7 +225,66 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                             Icons.save,
                             size: 12.0,
                           ),
-                          onPressed: () {},
+                          onPressed: () async {
+                            // Add video to the saved videos list hive box
+                            // Get channel data from Youtube API
+                            print("Save button pressed");
+
+                            VideoUtil video = new VideoUtil(
+                              videoURL:
+                                  'https://www.youtube.com/watch?v=${snapshot.data.video!.videoId ?? ""}',
+                              title: snapshot.data.video!.title ?? "",
+                              thumbnailURL:
+                                  snapshot.data.video!.channelThumb ?? "",
+                              id: snapshot.data.video!.videoId ?? "",
+                            );
+
+                            LocalStorageRepository localStorageRepository =
+                                LocalStorageRepository();
+                            Box box = await localStorageRepository
+                                .openBoxSavedVideos();
+
+                            print("video.id: ${video.id}");
+
+                            if (!box.containsKey(video.id)) {
+                              localStorageRepository.addSavedVideotoList(
+                                  box, video);
+
+                              print("Video added to the saved videos list");
+
+                              // Assign the video lists
+                              SavedVideos.listSavedVideosStatic =
+                                  localStorageRepository
+                                      .getSavedVideosList(box);
+                              SavedVideos.listSavedVideosStaticNotifier.value =
+                                  SavedVideos.listSavedVideosStatic;
+
+                              print("Value assigned to the saved videos list");
+
+                              // Subscribed to channel is true
+                              // Show the snackbar
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      "Video ${video.title} saved to your list"),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            } else {
+                              // Already subscribed to channel
+                              // Remove from the list
+                              localStorageRepository.removeSavedVideoFromList(
+                                  box, video);
+                              // Show the snackbar
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      "Video ${video.title} removed from your list"),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          },
                         ),
                         FloatingActionButton.extended(
                           label: Text(
@@ -238,6 +297,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                             Icons.headphones,
                             size: 12.0,
                           ),
+                          // Start downloading youtube video from server
                           onPressed: () {},
                         ),
                       ],
@@ -265,9 +325,11 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                       GestureDetector(
                         onTap: (() async {
                           // Open The Channel Page using ytExplode
-                          YoutubeExplode ytExplode = YoutubeExplode();
-                          Channel playlistVideos = await ytExplode.channels
-                              .get(videoDataLocalGenerated!.video!.channelId);
+                          explode.YoutubeExplode ytExplode =
+                              explode.YoutubeExplode();
+                          explode.Channel playlistVideos = await ytExplode
+                              .channels
+                              .get(snapshot.data.video!.channelId);
 
                           // Now we build the channel page based off the provided channel
                           // ignore: use_build_context_synchronously
@@ -284,8 +346,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                           padding: const EdgeInsets.all(10.0),
                           child: CircleAvatar(
                             backgroundImage: NetworkImage(
-                                videoDataLocalGenerated!.video!.channelThumb ??
-                                    ""),
+                                snapshot.data.video!.channelThumb ?? ""),
                           ),
                         ),
                       ),
@@ -294,13 +355,11 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                         child: Column(
                           children: [
                             Text(
-                                videoDataLocalGenerated!.video!.channelName
-                                        ?.toString() ??
+                                snapshot.data.video!.channelName?.toString() ??
                                     "",
                                 style: GoogleFonts.dmSans(
                                     fontWeight: FontWeight.bold)),
-                            Text(
-                                '${videoDataLocalGenerated!.video?.subscribeCount ?? ""}',
+                            Text('${snapshot.data.video?.subscribeCount ?? ""}',
                                 style: GoogleFonts.dmSans()),
                           ],
                         ),
@@ -339,20 +398,13 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                                   // Get channel data from Youtube API
 
                                   chan.Channel channel = chan.Channel(
-                                    id: videoDataLocalGenerated!
-                                            .video!.channelId ??
-                                        "",
-                                    title: videoDataLocalGenerated!
-                                            .video!.channelName ??
-                                        "",
-                                    thumbnailURL: videoDataLocalGenerated!
-                                            .video!.channelThumb ??
-                                        "",
+                                    id: snapshot.data.video!.channelId ?? "",
+                                    title:
+                                        snapshot.data.video!.channelName ?? "",
+                                    thumbnailURL:
+                                        snapshot.data.video!.channelThumb ?? "",
                                     channelURL:
-                                        'https://www.youtube.com/channel/' +
-                                            (videoDataLocalGenerated!
-                                                    .video!.channelId ??
-                                                ""),
+                                        'https://www.youtube.com/channel/${snapshot.data.video!.channelId ?? ""}',
                                   );
 
                                   LocalStorageRepository
@@ -373,8 +425,26 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                                             .listChannelStaticNotifier.value =
                                         SubscriptionsView.listChannelStatic;
                                     // Subscribed to channel is true
+                                    // Show the snackbar
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            "Subscribed to ${channel.title}"),
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
                                   } else {
                                     // Already subscribed to channel
+                                    localStorageRepository
+                                        .removeChannelFromList(box, channel);
+                                    // Show the snackbar
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            "Unsubscribed from ${channel.title}"),
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
                                   }
                                 },
                                 child: Text('Subscribe',
@@ -390,7 +460,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    VideoInfo.name,
+                    snapshot.data.video?.title ?? "",
                     style: GoogleFonts.dmSans(fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -399,7 +469,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    videoDataLocalGenerated!.video?.description ??
+                    snapshot.data.video?.description ??
                         "This video has no description",
                     style: GoogleFonts.dmSans(),
                   ),
@@ -417,44 +487,9 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
 
   String getVideoDate(String originalDate) {
     var length = originalDate.split(" ").length;
-    String modifiedDate = originalDate.split(" ").elementAt(length - 3) +
-        " " +
-        originalDate.split(" ").elementAt(length - 2) +
-        " " +
-        originalDate.split(" ").elementAt(length - 1);
+    String modifiedDate =
+        "${originalDate.split(" ").elementAt(length - 3)} ${originalDate.split(" ").elementAt(length - 2)} ${originalDate.split(" ").elementAt(length - 1)}";
     return modifiedDate;
   }
 
-// Not used because of outdated API
-  Widget getCommentsList() {
-    return ListView.builder(
-      scrollDirection: Axis.vertical,
-      physics: NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      itemCount: VideoInfo.comms?.length,
-      itemBuilder: (context, index) {
-        return Container(
-          child: Card(
-            elevation: 9,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(30)),
-            ),
-            child: ListTile(
-              dense: false,
-              leading: FlutterLogo(),
-              title: Text(
-                VideoInfo.comms?.elementAt(index).author ?? "",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-              ),
-              subtitle: Text(
-                VideoInfo.comms?.elementAt(index).text ?? "",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              trailing: Icon(Icons.arrow_forward_ios),
-            ),
-          ),
-        );
-      },
-    );
-  }
 }

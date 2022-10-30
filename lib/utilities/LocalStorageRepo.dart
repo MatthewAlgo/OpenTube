@@ -10,7 +10,7 @@ class LocalStorageRepository extends BaseLocalStorageRepository {
 
   // For channel subscriptions
   @override
-  Future<Box> openBox() async {
+  Future<Box> openBox() async { // Opens default (channel) box
     Box box = await Hive.openBox<Channel>(boxName);
     return box;
   }

@@ -47,7 +47,7 @@ class MainView extends StatefulWidget {
 class _MainViewState extends State<MainView>
     with AutomaticKeepAliveClientMixin<MainView> {
   late VideoSearchList VideosSearched;
-  late List<Video> VideosSearchedList;
+  List<Video> VideosSearchedList = [];
   final ScrollController controller = ScrollController();
   static bool comingFromFetch = false;
 
@@ -102,57 +102,54 @@ class _MainViewState extends State<MainView>
           controller: controller,
           itemCount: list?.length ?? 0 + 1,
           itemBuilder: (context, index) {
-            if (list != null) {
-              if (index < list.length) {
-                return Card(
-                    child: ListTile(
-                        title: Text(list.elementAt(index).title,
-                            style: GoogleFonts.dmSans(
-                                fontWeight: FontWeight.bold)),
-                        subtitle: Text(list.elementAt(index).description ?? "",
-                            style: GoogleFonts.dmSans()),
-                        leading: Container(
-                          decoration: BoxDecoration(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(8.0)),
-                            color: Colors.white,
-                          ),
-                          child: CachedNetworkImage(
-                            imageUrl:
-                                list.elementAt(index).thumbnails.standardResUrl,
-                            progressIndicatorBuilder:
-                                (context, url, downloadProgress) =>
-                                    CircularProgressIndicator(
-                                        value: downloadProgress.progress),
-                            errorWidget: (context, url, error) =>
-                                Icon(Icons.error),
-                          ),
+            if (list != null && index < list.length) {
+              return Card(
+                  child: ListTile(
+                      title: Text(list.elementAt(index).title,
+                          style: GoogleFonts.dmSans(
+                              fontWeight: FontWeight.bold)),
+                      subtitle: Text(list.elementAt(index).description ?? "",
+                          style: GoogleFonts.dmSans()),
+                      leading: Container(
+                        decoration: BoxDecoration(
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(8.0)),
+                          color: Colors.white,
                         ),
-                        trailing: Builder(builder: (context) {
-                          return Column(
-                            children: [
-                              const SizedBox(
-                                child: Icon(Icons.play_arrow),
+                        child: CachedNetworkImage(
+                          imageUrl:
+                              list.elementAt(index).thumbnails.standardResUrl,
+                          progressIndicatorBuilder:
+                              (context, url, downloadProgress) =>
+                                  CircularProgressIndicator(
+                                      value: downloadProgress.progress),
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
+                        ),
+                      ),
+                      trailing: Builder(builder: (context) {
+                        return Column(
+                          children: [
+                            const SizedBox(
+                              child: Icon(Icons.play_arrow),
+                            ),
+                            Container(
+                              margin: EdgeInsets.only(top: 4),
+                              child: const SizedBox(
+                                child: Icon(Icons.bookmark),
                               ),
-                              Container(
-                                margin: EdgeInsets.only(top: 4),
-                                child: const SizedBox(
-                                  child: Icon(Icons.bookmark),
-                                ),
-                              )
-                            ],
-                          );
-                        }),
-                        onTap: () {
-                          // ignore: use_build_context_synchronously
-                          Navigator.of(context, rootNavigator: true).push(
-                            MaterialPageRoute(builder: (context) {
-                              return VideoView(
-                                  videoId: '${list.elementAt(index).id}');
-                            }),
-                          );
-                        }));
-              }
+                            )
+                          ],
+                        );
+                      }),
+                      onTap: () {
+                        // ignore: use_build_context_synchronously
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(builder: (context) {
+                            return VideoView(videoId: '${list.elementAt(index).id}');
+                          }),
+                        );
+                      }));
             }
             return const Padding(
                 padding: EdgeInsets.symmetric(vertical: 32),
@@ -191,7 +188,7 @@ class _MainViewState extends State<MainView>
 
   Future _fetchNewData() async {
     MainView.loadingState = true;
-    VideosSearched = await appendToSearchList(VideosSearched);
+    VideosSearched = await appendToSearchList(VideosSearched, context);
     VideosSearchedList = assignData();
     MainView.loadingState = false;
     comingFromFetch = true;

@@ -15,17 +15,17 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart' as ytExp;
 import '../HomePage.dart';
 import '../connection/LoadingView.dart';
 
-class SavedVideos extends StatefulWidget {
-  const SavedVideos({super.key});
+class HistoryView extends StatefulWidget {
+  const HistoryView({super.key});
 
   @override
-  State<SavedVideos> createState() => _SavedVideosState();
-  static List<VideoUtil> listSavedVideosStatic = [];
-  static ValueNotifier<List<VideoUtil>> listSavedVideosStaticNotifier =
-      ValueNotifier<List<VideoUtil>>(listSavedVideosStatic);
+  State<HistoryView> createState() => _HistoryViewState();
+  static List<VideoUtil> listHistoryViewStatic = [];
+  static ValueNotifier<List<VideoUtil>> listHistoryViewStaticNotifier =
+      ValueNotifier<List<VideoUtil>>(listHistoryViewStatic);
 }
 
-class _SavedVideosState extends State<SavedVideos> {
+class _HistoryViewState extends State<HistoryView> {
   TextEditingController _editingcontroller = TextEditingController();
 
   @override
@@ -110,18 +110,18 @@ class _SavedVideosState extends State<SavedVideos> {
   }
 
   Widget buildAppBody() {
-    if (SavedVideos.listSavedVideosStatic.length == 0) {
+    if (HistoryView.listHistoryViewStatic.length == 0) {
       return const EmptyPage();
     } else {
       return ValueListenableBuilder(
-          valueListenable: SavedVideos.listSavedVideosStaticNotifier,
+          valueListenable: HistoryView.listHistoryViewStaticNotifier,
           builder: (context, value, _) {
             return Scaffold(
               backgroundColor: Colors.lightBlue.shade100,
               body: ListView.builder(
                 scrollDirection: Axis.vertical,
                 shrinkWrap: true,
-                itemCount: SavedVideos.listSavedVideosStatic.length,
+                itemCount: HistoryView.listHistoryViewStatic.length,
                 itemBuilder: (context, index) {
                   return Container(
                     child: Card(
@@ -132,9 +132,9 @@ class _SavedVideosState extends State<SavedVideos> {
                       child: ListTile(
                         dense: false,
                         trailing: buildUnsaveButton(
-                            SavedVideos.listSavedVideosStatic.elementAt(index)),
+                            HistoryView.listHistoryViewStatic.elementAt(index)),
                         title: Text(
-                          SavedVideos.listSavedVideosStatic
+                          HistoryView.listHistoryViewStatic
                               .elementAt(index)
                               .title,
                           style: GoogleFonts.dmSans(),
@@ -144,7 +144,7 @@ class _SavedVideosState extends State<SavedVideos> {
                             shape: BoxShape.circle,
                           ),
                           child: CachedNetworkImage(
-                            imageUrl: SavedVideos.listSavedVideosStatic
+                            imageUrl: HistoryView.listHistoryViewStatic
                                 .elementAt(index)
                                 .thumbnailURL,
                             progressIndicatorBuilder:
@@ -161,7 +161,7 @@ class _SavedVideosState extends State<SavedVideos> {
                               ytExp.YoutubeExplode();
                           ytExp.Channel playlistVideos = await ytExplode
                               .channels
-                              .get(SavedVideos.listSavedVideosStatic
+                              .get(HistoryView.listHistoryViewStatic
                                   .elementAt(index)
                                   .id);
 
@@ -170,7 +170,7 @@ class _SavedVideosState extends State<SavedVideos> {
                           Navigator.of(context, rootNavigator: true).push(
                             MaterialPageRoute(builder: (context) {
                               return VideoView(
-                                videoId: SavedVideos.listSavedVideosStatic
+                                videoId: HistoryView.listHistoryViewStatic
                                     .elementAt(index)
                                     .id,
                               );
@@ -208,7 +208,7 @@ class _SavedVideosState extends State<SavedVideos> {
               builder: (BuildContext context) => AlertDialog(
                 title: const Text('Confirmation'),
                 content: Text(
-                    'Are you sure you want to unsave ${savedVideoLocal.title}?'),
+                    'Are you sure you want to remove ${savedVideoLocal.title} from history?'),
                 actions: <Widget>[
                   TextButton(
                     onPressed: () => Navigator.pop(context, 'Cancel'),
@@ -225,15 +225,15 @@ class _SavedVideosState extends State<SavedVideos> {
                       // Unsubscribe and refresh list
                       LocalStorageRepository localStorageRepository =
                           LocalStorageRepository();
-                      Box box = await localStorageRepository.openBoxSavedVideos();
+                      Box box = await localStorageRepository.openBoxVideosHistory();
                       localStorageRepository.removeSavedVideoFromList(
                           box, video);
 
                       // Assign the channel lists
-                      SavedVideos.listSavedVideosStatic =
-                          localStorageRepository.getSavedVideosList(box);
-                      SavedVideos.listSavedVideosStaticNotifier.value =
-                          SavedVideos.listSavedVideosStatic;
+                      HistoryView.listHistoryViewStatic =
+                          localStorageRepository.getVideosHistoryList(box);
+                      HistoryView.listHistoryViewStaticNotifier.value =
+                          HistoryView.listHistoryViewStatic;
                       // Set the subscribed to channel variable equal to true
 
                       // ignore: use_build_context_synchronously
@@ -245,6 +245,6 @@ class _SavedVideosState extends State<SavedVideos> {
                 ],
               ),
             ),
-        child: Text('Unsave', style: GoogleFonts.dmSans()));
+        child: Text('Remove', style: GoogleFonts.dmSans()));
   }
 }

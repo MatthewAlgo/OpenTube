@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive/hive.dart';
 import 'package:libretube/utilities/Channel.dart';
+import 'package:libretube/utilities/VideoUtil.dart';
 import 'package:libretube/views/connection/ErrorView.dart';
 import 'package:libretube/views/HomePage.dart';
 import 'package:libretube/video/VideoView.dart';
@@ -21,6 +22,7 @@ Future<void> main() async {
 
   await Hive.initFlutter();
   Hive.registerAdapter(ChannelAdapter());
+  Hive.registerAdapter(VideoUtilAdapter());
 
   runApp(MaterialApp(
       theme: ThemeData(

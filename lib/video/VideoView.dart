@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:libretube/data/Pair.dart';
 import 'package:libretube/video/SimilarVideosView.dart';
 import 'package:libretube/video/VideoInfoBottom.dart';
 import 'package:libretube/views/connection/ErrorView.dart';
@@ -18,6 +19,7 @@ import 'package:youtube_data_api/models/channel.dart' as chandata;
 import 'package:youtube_data_api/models/video.dart' as viddata;
 import 'package:youtube_data_api/models/video_data.dart';
 import 'package:youtube_data_api/youtube_data_api.dart' as dapi;
+import 'package:youtube_data_api/youtube_data_api.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as exp;
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -25,6 +27,8 @@ class VideoView extends StatefulWidget {
   VideoView({Key? key, required String this.videoId}) : super(key: key);
 
   final String videoId;
+  // Declare late variable for the video data
+  late List<viddata.Video> videoData;
 
   @override
   State<VideoView> createState() => _VideoViewState();
@@ -32,11 +36,12 @@ class VideoView extends StatefulWidget {
 
 class _VideoViewState extends State<VideoView>
     with AutomaticKeepAliveClientMixin {
+  YoutubeDataApi dataAPI = YoutubeDataApi();
+  VideoData? videoData;
+
   late TextEditingController _seekToController;
   late TextEditingController _editingcontroller;
-  YoutubePlayerController _controller = YoutubePlayerController(
-    initialVideoId: VideoInfo.ID,
-  );
+  late YoutubePlayerController _controller;
   late bool autoPlay;
   PageController _pageController = PageController(keepPage: true);
 
@@ -79,29 +84,13 @@ class _VideoViewState extends State<VideoView>
       resizeToAvoidBottomInset: false,
       body: FutureBuilder(
           future: _getVideoInformation(widget.videoId),
-          builder: (BuildContext context, AsyncSnapshot<exp.Video> snapshot) {
+          builder: (BuildContext context, AsyncSnapshot<Pair<VideoData, List<viddata.Video>>> snapshot) {
             if (snapshot.hasData) {
-              // Populate static video info to be passed further
-              VideoInfo.video = snapshot.data!;
-              // Other elements to be easier to access
-              VideoInfo.ID = widget.videoId;
-
-              print("VidioID: ${VideoInfo.ID}");
-
-              VideoInfo.author = snapshot.data!.author;
-              VideoInfo.description =
-                  snapshot.data!.description.characters.string;
-              VideoInfo.name = snapshot.data!.title;
-              VideoInfo.publishDate = snapshot.data!.publishDate;
-              VideoInfo.channelID = snapshot.data!.channelId;
-              VideoInfo.isLive = snapshot.data!.isLive;
-              VideoInfo.keywords = snapshot.data!.keywords;
-
               return MaterialApp(
                   theme: ThemeData(useMaterial3: true),
                   home: Scaffold(
                     resizeToAvoidBottomInset: false,
-                    body: videoAppBody(),
+                    body: videoAppBody(snapshot.data!.value2),
                     appBar: MediaQuery.of(context).orientation ==
                             Orientation.landscape
                         ? null // show nothing in lanscape mode
@@ -176,7 +165,10 @@ class _VideoViewState extends State<VideoView>
     );
   }
 
-  Widget videoAppBody() {
+  Widget videoAppBody(List<viddata.Video> videoData) {
+    Future<VideoData> videoDataToBeProcessed;
+    videoDataToBeProcessed = _getVideoDataInformation(widget.videoId);
+
     return YoutubePlayerBuilder(
       player: YoutubePlayer(
         controller: _controller,
@@ -194,8 +186,10 @@ class _VideoViewState extends State<VideoView>
                   },
                   controller: _pageController,
                   children: <Widget>[
-                    VideoInfoBottomView(vidIdent: widget.videoId),
-                    SimilarVideosView(),
+                    VideoInfoBottomView(
+                        vidIdent: widget.videoId,
+                        videoData: videoDataToBeProcessed),
+                    SimilarVideosView(videoRecommended: videoData),
                   ],
                 ),
               ),
@@ -223,7 +217,6 @@ class _VideoViewState extends State<VideoView>
                             title: Text('Similar Videos'),
                             icon: Icon(Icons.trending_up_rounded),
                             textAlign: TextAlign.center),
-                        
                       ],
                     ),
         );
@@ -232,27 +225,17 @@ class _VideoViewState extends State<VideoView>
   }
 }
 
-Future<exp.Video> _getVideoInformation(String videoID) async {
-  exp.YoutubeExplode yt = exp.YoutubeExplode();
-  print('Getting address: https://youtube.com/watch?v=${videoID}');
-  exp.Video video =
-      await yt.videos.get('https://youtube.com/watch?v=${videoID}');
-  return video;
+Future<Pair<VideoData, List<viddata.Video>>> _getVideoInformation(String videoID) async {
+  YoutubeDataApi dataAPI = YoutubeDataApi();
+  VideoData? videoData = await dataAPI.fetchVideoData(videoID);
+
+  List<viddata.Video>? videoRecommended = videoData?.videosList;
+  Pair<VideoData, List<viddata.Video>> pair = new Pair<VideoData, List<viddata.Video>>(videoData!, videoRecommended!);
+  return pair;
 }
 
-class VideoInfo {
-  static late exp.Video video;
-  static late String name = "";
-  static late String ID = "";
-  static late String author = "";
-  static late exp.CommentsList comments;
-  static late String description;
-  static late DateTime? publishDate;
-  static late exp.CommentsList? comms;
-  static late exp.ChannelId channelID;
-  static late bool isLive;
-  static late UnmodifiableListView<String> keywords;
-  static late chandata.Channel videoChannel;
-  static late List<viddata.Video> relatedVideos;
-  static late VideoData videoData;
+Future<VideoData> _getVideoDataInformation(String videoID) async {
+  YoutubeDataApi dataAPI = YoutubeDataApi();
+  VideoData? videoData = await dataAPI.fetchVideoData(videoID);
+  return videoData!;
 }

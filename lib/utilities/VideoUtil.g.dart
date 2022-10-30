@@ -8,7 +8,7 @@ part of 'VideoUtil.dart';
 
 class VideoUtilAdapter extends TypeAdapter<VideoUtil> {
   @override
-  final int typeId = 0;
+  final int typeId = 1;
 
   @override
   VideoUtil read(BinaryReader reader) {

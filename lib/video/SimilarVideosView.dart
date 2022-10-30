@@ -7,8 +7,16 @@ import 'package:libretube/video/VideoInfoBottom.dart';
 import 'package:libretube/video/VideoView.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
+// import the youtube data api
+import 'package:youtube_data_api/youtube_data_api.dart' as dapi;
+import 'package:youtube_data_api/models/video.dart' as viddata;
+
 class SimilarVideosView extends StatefulWidget {
-  const SimilarVideosView({Key? key}) : super(key: key);
+  SimilarVideosView(
+      {Key? key, required List<viddata.Video> this.videoRecommended})
+      : super(key: key);
+
+  List<viddata.Video> videoRecommended;
 
   @override
   State<SimilarVideosView> createState() => _SimilarVideosViewState();
@@ -21,7 +29,7 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
       body: ListView.builder(
         scrollDirection: Axis.vertical,
         shrinkWrap: true,
-        itemCount: VideoInfo.relatedVideos.length,
+        itemCount: widget.videoRecommended.length,
         itemBuilder: (context, index) {
           return Container(
             child: Card(
@@ -33,11 +41,11 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
                 dense: false,
                 trailing: Icon(Icons.play_arrow_rounded),
                 title: Text(
-                  VideoInfo.relatedVideos.elementAt(index).title ?? "",
+                  widget.videoRecommended.elementAt(index).title ?? "",
                   style: GoogleFonts.dmSans(),
                 ),
                 leading: CachedNetworkImage(
-                  imageUrl: VideoInfo.relatedVideos
+                  imageUrl: widget.videoRecommended
                           .elementAt(index)
                           .thumbnails
                           ?.elementAt(0)
@@ -48,12 +56,13 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
                           value: downloadProgress.progress),
                   errorWidget: (context, url, error) => Icon(Icons.error),
                 ),
-                onTap: (()  {
+                onTap: (() {
                   // ignore: use_build_context_synchronously
                   Navigator.of(context, rootNavigator: true).pushReplacement(
                     MaterialPageRoute(builder: (context) {
-
-                      return VideoView(videoId: '${VideoInfo.relatedVideos.elementAt(index).videoId}');
+                      return VideoView(
+                          videoId:
+                              '${widget.videoRecommended.elementAt(index).videoId}');
                     }),
                   );
                 }),
