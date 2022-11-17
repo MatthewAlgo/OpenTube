@@ -40,7 +40,7 @@ dependencies:
   new_gradient_app_bar: 0.2.0
   animation_search_bar: 0.0.9
   google_fonts: 3.0.1
-  youtube_explode_dart: ^1.10.4
+  youtube_explode_dart: ^1.12.3
   loading_animation_widget: ^1.2.0+3
   youtube_player_flutter: ^8.1.1
   anim_search_bar: 2.0.2
