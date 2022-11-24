@@ -10,16 +10,12 @@ import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:libretube/data/Pair.dart';
-import 'package:libretube/video/SimilarVideosView.dart';
+import 'package:libretube/video/CommentsView.dart';
+import 'package:libretube/video/SameUploaderView.dart';
 import 'package:libretube/video/VideoInfoBottom.dart';
 import 'package:libretube/views/connection/ErrorView.dart';
 import 'package:libretube/views/HomePage.dart';
 import 'package:libretube/views/connection/LoadingView.dart';
-import 'package:youtube_data_api/models/channel.dart' as chandata;
-import 'package:youtube_data_api/models/video.dart' as viddata;
-import 'package:youtube_data_api/models/video_data.dart';
-import 'package:youtube_data_api/youtube_data_api.dart' as dapi;
-import 'package:youtube_data_api/youtube_data_api.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as exp;
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -27,8 +23,6 @@ class VideoView extends StatefulWidget {
   VideoView({Key? key, required String this.videoId}) : super(key: key);
 
   final String videoId;
-  // Declare late variable for the video data
-  late List<viddata.Video> videoData;
 
   @override
   State<VideoView> createState() => _VideoViewState();
@@ -36,13 +30,14 @@ class VideoView extends StatefulWidget {
 
 class _VideoViewState extends State<VideoView>
     with AutomaticKeepAliveClientMixin {
-  YoutubeDataApi dataAPI = YoutubeDataApi();
-  VideoData? videoData;
-
   late TextEditingController _seekToController;
   late TextEditingController _editingcontroller;
   late YoutubePlayerController _controller;
   late bool autoPlay;
+
+  late List<exp.Video> videoData;
+  late exp.CommentsList commentsList; 
+
   PageController _pageController = PageController(keepPage: true);
 
   @override
@@ -84,13 +79,14 @@ class _VideoViewState extends State<VideoView>
       resizeToAvoidBottomInset: false,
       body: FutureBuilder(
           future: _getVideoInformation(widget.videoId),
-          builder: (BuildContext context, AsyncSnapshot<Pair<VideoData, List<viddata.Video>>> snapshot) {
+          builder: (BuildContext context,
+              AsyncSnapshot<Pair<exp.Video, exp.Channel>> snapshot) {
             if (snapshot.hasData) {
               return MaterialApp(
                   theme: ThemeData(useMaterial3: true),
                   home: Scaffold(
                     resizeToAvoidBottomInset: false,
-                    body: videoAppBody(snapshot.data!.value2),
+                    body: videoAppBody(),
                     appBar: MediaQuery.of(context).orientation ==
                             Orientation.landscape
                         ? null // show nothing in lanscape mode
@@ -157,6 +153,8 @@ class _VideoViewState extends State<VideoView>
             } else if (snapshot.connectionState == ConnectionState.waiting) {
               return const LoadingView();
             } else if (snapshot.hasError) {
+              // Print the error
+              print("ErrorView: " + snapshot.error.toString());
               return const ErrorView();
             } else {
               return const ErrorView();
@@ -165,10 +163,7 @@ class _VideoViewState extends State<VideoView>
     );
   }
 
-  Widget videoAppBody(List<viddata.Video> videoData) {
-    Future<VideoData> videoDataToBeProcessed;
-    videoDataToBeProcessed = _getVideoDataInformation(widget.videoId);
-
+  Widget videoAppBody() {
     return YoutubePlayerBuilder(
       player: YoutubePlayer(
         controller: _controller,
@@ -186,9 +181,8 @@ class _VideoViewState extends State<VideoView>
                   },
                   controller: _pageController,
                   children: <Widget>[
-                    VideoInfoBottomView(
-                        vidIdent: widget.videoId,
-                        videoData: videoDataToBeProcessed),
+                    VideoInfoBottomView(vidIdent: widget.videoId),
+                    CommentsView(commentsList: commentsList),
                     SimilarVideosView(videoRecommended: videoData),
                   ],
                 ),
@@ -210,11 +204,15 @@ class _VideoViewState extends State<VideoView>
                       },
                       items: <BottomNavyBarItem>[
                         BottomNavyBarItem(
-                            title: Text('Video Data'),
+                            title: Text('Video Home'),
                             icon: Icon(Icons.home_rounded),
                             textAlign: TextAlign.center),
                         BottomNavyBarItem(
-                            title: Text('Similar Videos'),
+                            title: Text('Comments'),
+                            icon: Icon(Icons.comment_rounded),
+                            textAlign: TextAlign.center),
+                        BottomNavyBarItem(
+                            title: Text('Channel'),
                             icon: Icon(Icons.trending_up_rounded),
                             textAlign: TextAlign.center),
                       ],
@@ -223,19 +221,22 @@ class _VideoViewState extends State<VideoView>
       },
     );
   }
-}
 
-Future<Pair<VideoData, List<viddata.Video>>> _getVideoInformation(String videoID) async {
-  YoutubeDataApi dataAPI = YoutubeDataApi();
-  VideoData? videoData = await dataAPI.fetchVideoData(videoID);
+  Future<Pair<exp.Video, exp.Channel>> _getVideoInformation(
+      String videoID) async {
+    // Get video data from youtube explode
+    exp.YoutubeExplode ytExplode = exp.YoutubeExplode();
+    exp.Video video = await ytExplode.videos.get(videoID);
 
-  List<viddata.Video>? videoRecommended = videoData?.videosList;
-  Pair<VideoData, List<viddata.Video>> pair = new Pair<VideoData, List<viddata.Video>>(videoData!, videoRecommended!);
-  return pair;
-}
+    exp.ChannelClient channelClient = exp.YoutubeExplode().channels;
+    exp.Channel channel = await channelClient.getByVideo(video.id.toString());
+    // Fetch list of videos from the channel
+    List<exp.Video> videos =
+        await ytExplode.channels.getUploads(channel.id).take(25).toList(); // 25 videos loaded
+    // Fetch the list of comments for the video
+    commentsList = (await ytExplode.videos.comments.getComments(video))!;
 
-Future<VideoData> _getVideoDataInformation(String videoID) async {
-  YoutubeDataApi dataAPI = YoutubeDataApi();
-  VideoData? videoData = await dataAPI.fetchVideoData(videoID);
-  return videoData!;
+    videoData = videos;
+    return Pair<exp.Video, exp.Channel>(video, channel);
+  }
 }

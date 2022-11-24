@@ -5,18 +5,14 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:libretube/video/VideoInfoBottom.dart';
 import 'package:libretube/video/VideoView.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
-
-// import the youtube data api
-import 'package:youtube_data_api/youtube_data_api.dart' as dapi;
-import 'package:youtube_data_api/models/video.dart' as viddata;
+import 'package:youtube_explode_dart/youtube_explode_dart.dart' as exp;
 
 class SimilarVideosView extends StatefulWidget {
   SimilarVideosView(
-      {Key? key, required List<viddata.Video> this.videoRecommended})
+      {Key? key, required List<exp.Video> this.videoRecommended})
       : super(key: key);
 
-  List<viddata.Video> videoRecommended;
+  List<exp.Video> videoRecommended;
 
   @override
   State<SimilarVideosView> createState() => _SimilarVideosViewState();
@@ -47,10 +43,7 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
                 leading: CachedNetworkImage(
                   imageUrl: widget.videoRecommended
                           .elementAt(index)
-                          .thumbnails
-                          ?.elementAt(0)
-                          .url ??
-                      "",
+                          .thumbnails.mediumResUrl ?? "",
                   progressIndicatorBuilder: (context, url, downloadProgress) =>
                       CircularProgressIndicator(
                           value: downloadProgress.progress),
@@ -62,7 +55,7 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
                     MaterialPageRoute(builder: (context) {
                       return VideoView(
                           videoId:
-                              '${widget.videoRecommended.elementAt(index).videoId}');
+                              '${widget.videoRecommended.elementAt(index).id}');
                     }),
                   );
                 }),

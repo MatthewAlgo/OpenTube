@@ -4,6 +4,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_share/flutter_share.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
+import 'package:libretube/data/Pair.dart';
 import 'package:libretube/utilities/LocalStorageRepo.dart';
 import 'package:libretube/utilities/VideoUtil.dart';
 import 'package:libretube/views/connection/ErrorView.dart';
@@ -26,18 +27,13 @@ import 'VideoView.dart';
 import '../utilities/Channel.dart' as chan;
 
 class VideoInfoBottomView extends StatefulWidget {
-  VideoInfoBottomView(
-      {Key? key,
-      required String this.vidIdent,
-      required Future<VideoData> this.videoData})
-      : super(key: key);
+  VideoInfoBottomView({
+    Key? key,
+    required String this.vidIdent,
+  }) : super(key: key);
 
   static int numberOfCallsFromTabChange = 0;
   final String vidIdent;
-
-  // Declare static lists of objects that get modified in the VideoInfoBottomView
-  Future<VideoData> videoData;
-  late List<viddata.Video> relatedVideos;
 
   @override
   State<VideoInfoBottomView> createState() => _VideoInfoBottomViewState();
@@ -46,6 +42,7 @@ class VideoInfoBottomView extends StatefulWidget {
 class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
     with AutomaticKeepAliveClientMixin {
   List<viddata.Video> relatedVideos = [];
+  late AsyncSnapshot savedSnapshot;
 
   @override
   void initState() {
@@ -59,39 +56,62 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
   Widget build(BuildContext context) {
     super.build(context);
     VideoInfoBottomView.numberOfCallsFromTabChange++;
-    if (VideoInfoBottomView.numberOfCallsFromTabChange == 1) {
-      // If we don't save our video data inside a variable, then do the api call
-      return FutureBuilder<VideoData>(
-          future: fetchNetworkCall(widget.vidIdent),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return getPageBody(context, snapshot);
-            } else if (snapshot.connectionState == ConnectionState.waiting) {
-              return LoadingView();
-            } else {
-              return ErrorView();
-            }
-          });
-    } else {
-      print("Getting page body for bottom view...");
-      // ignore: unnecessary_null_comparison
-      if (widget.videoData != null) {
-        return ErrorView(); // TODO: Fix this
-      } else {
-        print("The video data was null");
-        return ErrorView();
-      }
-    }
+    // Return a scaffold with an orientation builder
+    return Scaffold(
+      body: OrientationBuilder(builder: (context, orientation) {
+        // If orientation is portrait, return a column
+        if (orientation == Orientation.portrait && VideoInfoBottomView.numberOfCallsFromTabChange == 1) { // The initial call
+          if (VideoInfoBottomView.numberOfCallsFromTabChange == 1) {
+            return FutureBuilder<Pair<explode.Video, explode.Channel>>(
+                future: fetchNetworkCall(widget.vidIdent),
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    savedSnapshot = snapshot;
+                    return getPageBody(context, snapshot);
+                  } else if (snapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return LoadingView();
+                  } else {
+                    return ErrorView();
+                  }
+                });
+          } else {
+            print("Getting page body for bottom view...");
+            return getPageBody(context, savedSnapshot);
+          }
+        } else if (orientation == Orientation.portrait && VideoInfoBottomView.numberOfCallsFromTabChange != 1){
+          // If orientation is landscape
+          return getPageBody(context, savedSnapshot);
+        }
+        // If it gets here, just return the saved snapshot
+        return getPageBody(context, savedSnapshot);
+      }),
+    );
   }
 
   // We do this without being necessary -> performance impact
-  Future<VideoData> fetchNetworkCall(String Vidid) async {
-    VideoData viddata = await widget.videoData;
-    relatedVideos = viddata.videosList;
-    return viddata;
+  Future<Pair<explode.Video, explode.Channel>> fetchNetworkCall(
+      String Vidid) async {
+    explode.YoutubeExplode ytExplode = explode.YoutubeExplode();
+    explode.Video video = await ytExplode.videos.get(widget.vidIdent);
+
+    explode.ChannelClient channelClient = explode.YoutubeExplode().channels;
+    explode.Channel channel =
+        await channelClient.getByVideo(video.id.toString());
+
+    return Pair<explode.Video, explode.Channel>(video, channel);
   }
 
   Widget getPageBody(BuildContext context, AsyncSnapshot snapshot) {
+    // Print the data type of the snapshot
+    print("Snapshot data type: ${snapshot.data.runtimeType}");
+
+    explode.Video videofromsnapshot = snapshot.data.getFirst();
+    // Initalize a searchVideo object using the videofromsnapshot
+
+    // Get the explode.Channel channel of the video
+    explode.Channel channelsnap = snapshot.data.getSecond();
+
     return Scaffold(
       body: Container(
         child: SingleChildScrollView(
@@ -118,22 +138,9 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                         children: <Widget>[
                           Padding(
                             padding: const EdgeInsets.all(4.0),
-                            child: Icon(Icons.thumb_up_alt_rounded),
-                          ), // <-- Icon
-                          Text(snapshot.data.video!.likeCount ?? "",
-                              style:
-                                  GoogleFonts.dmSans(fontSize: 12)), // <-- Text
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      child: Column(
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.all(4.0),
                             child: Icon(Icons.play_circle),
                           ), // <-- Icon
-                          Text(snapshot.data.video!.viewCount ?? "",
+                          Text(videofromsnapshot.isLive ? "Live" : "Not Live",
                               style:
                                   GoogleFonts.dmSans(fontSize: 12)), // <-- Text
                         ],
@@ -148,7 +155,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                           ), // <-- Icon
                           Text(
                               getVideoDate(
-                                  snapshot.data.video!.date ?? "1 Jan. 1970"),
+                                  videofromsnapshot.publishDate.toString()),
                               style:
                                   GoogleFonts.dmSans(fontSize: 12)), // <-- Text
                         ],
@@ -159,9 +166,9 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                         // Define the box for the share item
                         final box = context.findRenderObject() as RenderBox?;
                         await Share.share(
-                          "https://www.youtube.com/watch?v=${snapshot.data.video.videoId}",
+                          "https://www.youtube.com/watch?v=${videofromsnapshot.id}",
                           subject:
-                              "https://www.youtube.com/watch?v=${snapshot.data.video!.videoId}",
+                              "https://www.youtube.com/watch?v=${videofromsnapshot.id}",
                           sharePositionOrigin:
                               box!.localToGlobal(Offset.zero) & box.size,
                         );
@@ -228,15 +235,14 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                           onPressed: () async {
                             // Add video to the saved videos list hive box
                             // Get channel data from Youtube API
-                            print("Save button pressed");
 
                             VideoUtil video = new VideoUtil(
                               videoURL:
-                                  'https://www.youtube.com/watch?v=${snapshot.data.video!.videoId ?? ""}',
-                              title: snapshot.data.video!.title ?? "",
+                                  'https://www.youtube.com/watch?v=${videofromsnapshot.id.toString()}',
+                              title: videofromsnapshot.title,
                               thumbnailURL:
-                                  snapshot.data.video!.channelThumb ?? "",
-                              id: snapshot.data.video!.videoId ?? "",
+                                  videofromsnapshot.thumbnails.highResUrl,
+                              id: videofromsnapshot.id.toString(),
                             );
 
                             LocalStorageRepository localStorageRepository =
@@ -329,7 +335,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                               explode.YoutubeExplode();
                           explode.Channel playlistVideos = await ytExplode
                               .channels
-                              .get(snapshot.data.video!.channelId);
+                              .get(videofromsnapshot.channelId);
 
                           // Now we build the channel page based off the provided channel
                           // ignore: use_build_context_synchronously
@@ -345,8 +351,8 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                         child: Padding(
                           padding: const EdgeInsets.all(10.0),
                           child: CircleAvatar(
-                            backgroundImage: NetworkImage(
-                                snapshot.data.video!.channelThumb ?? ""),
+                            backgroundImage:
+                                NetworkImage(channelsnap.logoUrl.toString()),
                           ),
                         ),
                       ),
@@ -354,12 +360,11 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                         padding: const EdgeInsets.all(10.0),
                         child: Column(
                           children: [
-                            Text(
-                                snapshot.data.video!.channelName?.toString() ??
-                                    "",
+                            Text(channelsnap.title.toString(),
                                 style: GoogleFonts.dmSans(
                                     fontWeight: FontWeight.bold)),
-                            Text('${snapshot.data.video?.subscribeCount ?? ""}',
+                            Text(
+                                '${channelsnap.subscribersCount.toString()} Subscribers',
                                 style: GoogleFonts.dmSans()),
                           ],
                         ),
@@ -398,13 +403,12 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                                   // Get channel data from Youtube API
 
                                   chan.Channel channel = chan.Channel(
-                                    id: snapshot.data.video!.channelId ?? "",
-                                    title:
-                                        snapshot.data.video!.channelName ?? "",
+                                    id: videofromsnapshot.channelId.toString(),
+                                    title: videofromsnapshot.author.toString(),
                                     thumbnailURL:
-                                        snapshot.data.video!.channelThumb ?? "",
+                                        channelsnap.logoUrl.toString(),
                                     channelURL:
-                                        'https://www.youtube.com/channel/${snapshot.data.video!.channelId ?? ""}',
+                                        'https://www.youtube.com/channel/${channelsnap.id}',
                                   );
 
                                   LocalStorageRepository
@@ -460,7 +464,9 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    snapshot.data.video?.title ?? "",
+                    videofromsnapshot.title.toString() != ""
+                        ? videofromsnapshot.title.toString()
+                        : 'This video has no title',
                     style: GoogleFonts.dmSans(fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -469,8 +475,9 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    snapshot.data.video?.description ??
-                        "This video has no description",
+                    videofromsnapshot.description.toString() == ''
+                        ? 'This video has no description'
+                        : videofromsnapshot.description.toString(),
                     style: GoogleFonts.dmSans(),
                   ),
                 ),
@@ -486,10 +493,17 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
   }
 
   String getVideoDate(String originalDate) {
-    var length = originalDate.split(" ").length;
-    String modifiedDate =
-        "${originalDate.split(" ").elementAt(length - 3)} ${originalDate.split(" ").elementAt(length - 2)} ${originalDate.split(" ").elementAt(length - 1)}";
-    return modifiedDate;
+    // Get the first part of the date before space
+    String date = originalDate.split(' ')[0];
+    // Split the date into day, month and year
+    List<String> dateSplit = date.split('-');
+    // Get the month
+    String month = dateSplit[1];
+    // Get the day
+    String day = dateSplit[2];
+    // Get the year
+    String year = dateSplit[0];
+    // Return the date in the format of day month year
+    return '$year-$month-$day';
   }
-
 }

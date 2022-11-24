@@ -11,9 +11,12 @@ import 'package:libretube/views/connection/LoadingView.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:hive_flutter/hive_flutter.dart';
 
-//TODO: Implement DiscoverView -> do statistics on the most viewed / saved channels and show first 5 elements from those channels
-//TODO: Solve issue where video is sometimes null even after futurebuilder in VideoView
-//TODO: Implement saved videos view and viewhistory view
+/// TODO: Implement DiscoverView -> do statistics on the most viewed / saved channels and show first 5 elements from those channels
+//// /TODO: Solve issue where video is sometimes null even after futurebuilder in VideoView
+/// TODO: Repair search bar weird behavior
+/// TODO: Saved videos do not show up in the saved videos view on first load - repair
+/// TODO: Screen change orientation reloading the page - unwanted behavior
+/// TODO: Implement saved videos view and history view
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();

@@ -11,6 +11,14 @@ class Pair<T1, T2> {
     return {value1: value2};
   }
 
+  T1 getFirst() {
+    return value1;
+  }
+
+  T2 getSecond() {
+    return value2;
+  }
+
   // Create a method to convert the pair to a json
   String toJson() {
     return jsonEncode(toMap());

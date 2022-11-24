@@ -308,7 +308,15 @@ class _ChannelViewState extends State<ChannelView> {
     MainView.loadingState = true;
     listVideos = await appendToChannelList(listVideos);
     MainView.loadingState = false;
-    setState(() {});
+    // Update the ui without rebuilding the whole widget
+    setState(() {
+      // Show a snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Loaded ${listVideos.length} videos'),
+        ),
+      );
+    });
   }
 
   PreferredSizeWidget buildTopAppBar() {

@@ -19,6 +19,7 @@ class _DiscoverViewState extends State<DiscoverView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.lightBlue.shade100,
+      // TODO: Get recommended videos based on user's channel subscriptions and history
       body: Center(
           child: Text(
         'Discover View',

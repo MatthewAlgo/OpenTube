@@ -159,8 +159,8 @@ class _SavedVideosState extends State<SavedVideos> {
                           // Open The Channel Page using ytExplode
                           ytExp.YoutubeExplode ytExplode =
                               ytExp.YoutubeExplode();
-                          ytExp.Channel playlistVideos = await ytExplode
-                              .channels
+                          ytExp.Video playlistVideos = await ytExplode
+                              .videos
                               .get(SavedVideos.listSavedVideosStatic
                                   .elementAt(index)
                                   .id);

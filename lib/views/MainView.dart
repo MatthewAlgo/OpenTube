@@ -51,7 +51,6 @@ class _MainViewState extends State<MainView>
   final ScrollController controller = ScrollController();
   static bool comingFromFetch = false;
 
-
   @override
   void initState() {
     super.initState();
@@ -77,7 +76,7 @@ class _MainViewState extends State<MainView>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    
+
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
@@ -106,14 +105,13 @@ class _MainViewState extends State<MainView>
               return Card(
                   child: ListTile(
                       title: Text(list.elementAt(index).title,
-                          style: GoogleFonts.dmSans(
-                              fontWeight: FontWeight.bold)),
+                          style:
+                              GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
                       subtitle: Text(list.elementAt(index).description ?? "",
                           style: GoogleFonts.dmSans()),
                       leading: Container(
                         decoration: BoxDecoration(
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(8.0)),
+                          borderRadius: BorderRadius.all(Radius.circular(8.0)),
                           color: Colors.white,
                         ),
                         child: CachedNetworkImage(
@@ -146,7 +144,8 @@ class _MainViewState extends State<MainView>
                         // ignore: use_build_context_synchronously
                         Navigator.of(context, rootNavigator: true).push(
                           MaterialPageRoute(builder: (context) {
-                            return VideoView(videoId: '${list.elementAt(index).id}');
+                            return VideoView(
+                                videoId: '${list.elementAt(index).id}');
                           }),
                         );
                       }));
@@ -209,6 +208,7 @@ class _MainViewState extends State<MainView>
     // Function used to fill search and user interaction buffers
     LocalStorageRepository localStorageRepository = LocalStorageRepository();
     Box box = await localStorageRepository.openBox();
+
     List<chan.Channel> channels = localStorageRepository.getChannelList(box);
     SubscriptionsView.listChannelStatic = channels; // Fill the static variable
     SubscriptionsList.subscriptionsChannel =
