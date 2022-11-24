@@ -17,6 +17,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 /// TODO: Saved videos do not show up in the saved videos view on first load - repair
 /// TODO: Screen change orientation reloading the page - unwanted behavior
 /// TODO: Implement saved videos view and history view
+/// TODO: Add a splash screen
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
