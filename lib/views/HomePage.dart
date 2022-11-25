@@ -153,11 +153,11 @@ class _HomePageState extends State<HomePage>
                 prefixIcon: Icon(Icons.search_outlined),
                 width: MediaQuery.of(context).size.width,
                 textController: HomePage.editingController,
-                onSuffixTap: () {
+                onSuffixTap: () async {
                   selectedpage = 0;
                   _pageController.jumpToPage(0); // Go to homepage and refresh
-                  setState(() async {
-                    await _refreshPage();
+                  await _refreshPage();
+                  setState(() {
                     _pageController.animateToPage(0,
                         duration: Duration(milliseconds: 300),
                         curve: Curves.ease);

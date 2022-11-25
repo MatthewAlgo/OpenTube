@@ -12,6 +12,8 @@ import 'package:flutter_zoom_drawer/config.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
+import 'package:libretube/utilities/VideoUtil.dart';
+import 'package:libretube/views/DiscoverView.dart';
 import 'package:libretube/views/HomePage.dart';
 import 'package:libretube/views/connection/NoResultsView.dart';
 import 'package:libretube/views/TrendingView.dart';
@@ -19,6 +21,8 @@ import 'package:libretube/views/connection/ErrorView.dart';
 import 'package:libretube/views/connection/LoadingView.dart';
 import 'package:libretube/views/SubscriptionsView.dart';
 import 'package:libretube/video/VideoView.dart';
+import 'package:libretube/views/drawer/HistoryView.dart';
+import 'package:libretube/views/drawer/SavedVideos.dart';
 import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:youtube_data_api/models/playlist.dart';
@@ -208,8 +212,18 @@ class _MainViewState extends State<MainView>
     // Function used to fill search and user interaction buffers
     LocalStorageRepository localStorageRepository = LocalStorageRepository();
     Box box = await localStorageRepository.openBox();
+    Box box2 = await localStorageRepository.openBoxSavedVideos();
+    Box box3 = await localStorageRepository.openBoxVideosHistory();
 
     List<chan.Channel> channels = localStorageRepository.getChannelList(box);
+    List<VideoUtil> videosSaved =
+        localStorageRepository.getSavedVideosList(box2);
+    List<VideoUtil> videosHistory =
+        localStorageRepository.getVideosHistoryList(box3);
+
+    SavedVideos.listSavedVideosStatic = videosSaved;
+    HistoryView.listHistoryViewStatic = videosHistory;
+    
     SubscriptionsView.listChannelStatic = channels; // Fill the static variable
     SubscriptionsList.subscriptionsChannel =
         channels; // Fill the buffer for the channels
@@ -223,12 +237,45 @@ class _MainViewState extends State<MainView>
         VideosSearchedList = assignData();
 
         dataapi.YoutubeDataApi youtubeDataApi = dataapi.YoutubeDataApi();
+        YoutubeExplode explodeYt = YoutubeExplode();
+
+        // Get the result of search "Flutter"
+        VideoSearchList searchResultNews =
+            await explodeYt.search.search("World News");
+        VideoSearchList searchResultWeather =
+            await explodeYt.search.search("Weather");
+        VideoSearchList searchResultEntert =
+            await explodeYt.search.search("Entertainment");
+        VideoSearchList searchResultSport =
+            await explodeYt.search.search("Sport");
+        VideoSearchList searchResultTech =
+            await explodeYt.search.search("Technology");
+        VideoSearchList searchResultPolitics =
+            await explodeYt.search.search("Politics");
+        VideoSearchList searchResultMusic =
+            await explodeYt.search.search("Music");
+
+        // Merge all the results
+        List<Video> searchResult = // Concat all lists
+            searchResultNews +
+                searchResultWeather +
+                searchResultEntert +
+                searchResultSport +
+                searchResultTech +
+                searchResultPolitics +
+                searchResultMusic;
+        DiscoverView.videoListDiscover = searchResult;
+
+        List<vid.Video> trendingVideos =
+            await youtubeDataApi.fetchTrendingVideo();
         List<vid.Video> trendingMusicVideos =
             await youtubeDataApi.fetchTrendingMusic();
         List<vid.Video> trendingGamingVideos =
             await youtubeDataApi.fetchTrendingGaming();
         List<vid.Video> trendingMoviesVideos =
             await youtubeDataApi.fetchTrendingMovies();
+
+        // Get the list of videos resulted from searching "World News" using
 
         TrendingView.videoListTrending =
             trendingMusicVideos; // Assign the variables
@@ -239,6 +286,10 @@ class _MainViewState extends State<MainView>
         for (int i = 0; i < trendingMoviesVideos.length; ++i) {
           TrendingView.videoListTrending.add(trendingMoviesVideos.elementAt(i));
         }
+        for (int i = 0; i < trendingVideos.length; ++i) {
+          TrendingView.videoListTrending.add(trendingVideos.elementAt(i));
+        }
+
         TrendingView.videoListTrending
             .shuffle(); // Make the list of elements and mix the categories -> for now
 

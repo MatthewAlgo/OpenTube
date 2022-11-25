@@ -30,10 +30,14 @@ class VideoInfoBottomView extends StatefulWidget {
   VideoInfoBottomView({
     Key? key,
     required String this.vidIdent,
+    required this.videodata,
   }) : super(key: key);
 
   static int numberOfCallsFromTabChange = 0;
+  static Pair<explode.Video, explode.Channel>? savedSnapshot;
+
   final String vidIdent;
+  final Pair<explode.Video, explode.Channel> videodata;
 
   @override
   State<VideoInfoBottomView> createState() => _VideoInfoBottomViewState();
@@ -42,7 +46,6 @@ class VideoInfoBottomView extends StatefulWidget {
 class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
     with AutomaticKeepAliveClientMixin {
   List<viddata.Video> relatedVideos = [];
-  late AsyncSnapshot savedSnapshot;
 
   @override
   void initState() {
@@ -56,61 +59,27 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
   Widget build(BuildContext context) {
     super.build(context);
     VideoInfoBottomView.numberOfCallsFromTabChange++;
-    // Return a scaffold with an orientation builder
-    return Scaffold(
-      body: OrientationBuilder(builder: (context, orientation) {
-        // If orientation is portrait, return a column
-        if (orientation == Orientation.portrait && VideoInfoBottomView.numberOfCallsFromTabChange == 1) { // The initial call
-          if (VideoInfoBottomView.numberOfCallsFromTabChange == 1) {
-            return FutureBuilder<Pair<explode.Video, explode.Channel>>(
-                future: fetchNetworkCall(widget.vidIdent),
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    savedSnapshot = snapshot;
-                    return getPageBody(context, snapshot);
-                  } else if (snapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return LoadingView();
-                  } else {
-                    return ErrorView();
-                  }
-                });
-          } else {
-            print("Getting page body for bottom view...");
-            return getPageBody(context, savedSnapshot);
-          }
-        } else if (orientation == Orientation.portrait && VideoInfoBottomView.numberOfCallsFromTabChange != 1){
-          // If orientation is landscape
-          return getPageBody(context, savedSnapshot);
-        }
-        // If it gets here, just return the saved snapshot
-        return getPageBody(context, savedSnapshot);
-      }),
-    );
+
+    // If the orientation is land
+    if (MediaQuery.of(context).orientation == Orientation.landscape) {
+      VideoView.selectedpage = 0;
+    }
+    
+    if (VideoInfoBottomView.numberOfCallsFromTabChange != 1) {
+      return getPageBody(context, VideoInfoBottomView.savedSnapshot!);
+    } else {
+      VideoInfoBottomView.savedSnapshot = widget.videodata;
+      return getPageBody(context, widget.videodata);
+    }
   }
 
-  // We do this without being necessary -> performance impact
-  Future<Pair<explode.Video, explode.Channel>> fetchNetworkCall(
-      String Vidid) async {
-    explode.YoutubeExplode ytExplode = explode.YoutubeExplode();
-    explode.Video video = await ytExplode.videos.get(widget.vidIdent);
-
-    explode.ChannelClient channelClient = explode.YoutubeExplode().channels;
-    explode.Channel channel =
-        await channelClient.getByVideo(video.id.toString());
-
-    return Pair<explode.Video, explode.Channel>(video, channel);
-  }
-
-  Widget getPageBody(BuildContext context, AsyncSnapshot snapshot) {
-    // Print the data type of the snapshot
-    print("Snapshot data type: ${snapshot.data.runtimeType}");
-
-    explode.Video videofromsnapshot = snapshot.data.getFirst();
+  Widget getPageBody(
+      BuildContext context, Pair<explode.Video, explode.Channel> snapshot) {
+    explode.Video videofromsnapshot = snapshot.getFirst();
     // Initalize a searchVideo object using the videofromsnapshot
 
     // Get the explode.Channel channel of the video
-    explode.Channel channelsnap = snapshot.data.getSecond();
+    explode.Channel channelsnap = snapshot.getSecond();
 
     return Scaffold(
       body: Container(
@@ -364,7 +333,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                                 style: GoogleFonts.dmSans(
                                     fontWeight: FontWeight.bold)),
                             Text(
-                                '${channelsnap.subscribersCount.toString()} Subscribers',
+                                '${channelsnap.subscribersCount.toString() != "null" ? channelsnap.subscribersCount.toString() : "No"} Subscribers',
                                 style: GoogleFonts.dmSans()),
                           ],
                         ),

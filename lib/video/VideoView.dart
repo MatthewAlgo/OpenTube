@@ -24,6 +24,8 @@ class VideoView extends StatefulWidget {
 
   final String videoId;
 
+  static int selectedpage = 0;
+
   @override
   State<VideoView> createState() => _VideoViewState();
 }
@@ -36,15 +38,12 @@ class _VideoViewState extends State<VideoView>
   late bool autoPlay;
 
   late List<exp.Video> videoData;
-  late exp.CommentsList commentsList; 
+  late exp.CommentsList? commentsList;
 
   PageController _pageController = PageController(keepPage: true);
 
   @override
   bool get wantKeepAlive => true;
-
-  // Change views in page bottom
-  int selectedpage = 0;
 
   @override
   void initState() {
@@ -170,73 +169,96 @@ class _VideoViewState extends State<VideoView>
         showVideoProgressIndicator: true,
       ),
       builder: (context, player) {
-        return Scaffold(
-          body: Column(
-            children: [
-              player,
-              Flexible(
-                child: PageView(
-                  onPageChanged: (index) {
-                    setState(() => selectedpage = index);
-                  },
-                  controller: _pageController,
-                  children: <Widget>[
-                    VideoInfoBottomView(vidIdent: widget.videoId),
-                    CommentsView(commentsList: commentsList),
-                    SimilarVideosView(videoRecommended: videoData),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          bottomNavigationBar:
-              MediaQuery.of(context).orientation == Orientation.landscape
-                  ? null // show nothing in lanscape mode
-                  : BottomNavyBar(
-                      backgroundColor: Colors.yellow.shade300,
-                      selectedIndex: selectedpage,
-                      onItemSelected: (index) {
-                        setState(() => selectedpage = index);
-                        _pageController.jumpToPage(index);
-                        _pageController.animateToPage(index,
-                            duration: Duration(milliseconds: 300),
-                            curve: Curves.ease);
-                      },
-                      items: <BottomNavyBarItem>[
-                        BottomNavyBarItem(
-                            title: Text('Video Home'),
-                            icon: Icon(Icons.home_rounded),
-                            textAlign: TextAlign.center),
-                        BottomNavyBarItem(
-                            title: Text('Comments'),
-                            icon: Icon(Icons.comment_rounded),
-                            textAlign: TextAlign.center),
-                        BottomNavyBarItem(
-                            title: Text('Channel'),
-                            icon: Icon(Icons.trending_up_rounded),
-                            textAlign: TextAlign.center),
-                      ],
-                    ),
-        );
+        return FutureBuilder(
+            future: _getVideoInformation(widget.videoId),
+            builder: (BuildContext context,
+                AsyncSnapshot<Pair<exp.Video, exp.Channel>> snapshot) {
+              if (snapshot.hasData) {
+                return Scaffold(
+                  body: Column(
+                    children: [
+                      player,
+                      Flexible(
+                        child: PageView(
+                          onPageChanged: (index) {
+                            setState(() => VideoView.selectedpage = index);
+                          },
+                          controller: _pageController,
+                          children: <Widget>[
+                            VideoInfoBottomView(
+                                vidIdent: widget.videoId,
+                                videodata: snapshot.data!), // Can't be null
+                            CommentsView(commentsList: commentsList),
+                            SimilarVideosView(videoRecommended: videoData),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  bottomNavigationBar: MediaQuery.of(context).orientation ==
+                          Orientation.landscape
+                      ? null // show nothing in lanscape mode
+                      : BottomNavyBar(
+                          backgroundColor: Colors.yellow.shade300,
+                          selectedIndex: VideoView.selectedpage,
+                          onItemSelected: (index) {
+                            setState(() => VideoView.selectedpage = index);
+                            _pageController.jumpToPage(index);
+                            _pageController.animateToPage(index,
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.ease);
+                          },
+                          items: <BottomNavyBarItem>[
+                            BottomNavyBarItem(
+                                title: Text('Video Home'),
+                                icon: Icon(Icons.home_rounded),
+                                textAlign: TextAlign.center),
+                            BottomNavyBarItem(
+                                title: Text('Comments'),
+                                icon: Icon(Icons.comment_rounded),
+                                textAlign: TextAlign.center),
+                            BottomNavyBarItem(
+                                title: Text('Channel'),
+                                icon: Icon(Icons.trending_up_rounded),
+                                textAlign: TextAlign.center),
+                          ],
+                        ),
+                );
+              } else if (snapshot.connectionState == ConnectionState.waiting) {
+                return const LoadingView();
+              } else if (snapshot.hasError) {
+                // Print the error
+                print("ErrorView: " + snapshot.error.toString());
+                return const ErrorView();
+              } else {
+                return const ErrorView();
+              }
+            });
       },
     );
   }
 
   Future<Pair<exp.Video, exp.Channel>> _getVideoInformation(
       String videoID) async {
-    // Get video data from youtube explode
-    exp.YoutubeExplode ytExplode = exp.YoutubeExplode();
-    exp.Video video = await ytExplode.videos.get(videoID);
+    if (VideoInfoBottomView.numberOfCallsFromTabChange == 0) { // Call this only once per video
+      // Get video data from youtube explode
+      exp.YoutubeExplode ytExplode = exp.YoutubeExplode();
+      exp.Video video = await ytExplode.videos.get(videoID);
 
-    exp.ChannelClient channelClient = exp.YoutubeExplode().channels;
-    exp.Channel channel = await channelClient.getByVideo(video.id.toString());
-    // Fetch list of videos from the channel
-    List<exp.Video> videos =
-        await ytExplode.channels.getUploads(channel.id).take(25).toList(); // 25 videos loaded
-    // Fetch the list of comments for the video
-    commentsList = (await ytExplode.videos.comments.getComments(video))!;
+      exp.ChannelClient channelClient = exp.YoutubeExplode().channels;
+      exp.Channel channel = await channelClient.getByVideo(video.id.toString());
+      // Fetch list of videos from the channel
+      List<exp.Video> videos = await ytExplode.channels
+          .getUploads(channel.id)
+          .take(25)
+          .toList(); // 25 videos loaded
+      // Fetch the list of comments for the video
+      commentsList = await ytExplode.videos.comments.getComments(video);
 
-    videoData = videos;
-    return Pair<exp.Video, exp.Channel>(video, channel);
+      videoData = videos;
+      return Pair<exp.Video, exp.Channel>(video, channel);
+    }else{
+      return Pair<exp.Video, exp.Channel>(VideoInfoBottomView.savedSnapshot!.getFirst(), VideoInfoBottomView.savedSnapshot!.getSecond());
+    }
   }
 }
