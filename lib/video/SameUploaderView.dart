@@ -37,13 +37,13 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
                 dense: false,
                 trailing: Icon(Icons.play_arrow_rounded),
                 title: Text(
-                  widget.videoRecommended.elementAt(index).title ?? "",
+                  widget.videoRecommended.elementAt(index).title,
                   style: GoogleFonts.dmSans(),
                 ),
                 leading: CachedNetworkImage(
                   imageUrl: widget.videoRecommended
                           .elementAt(index)
-                          .thumbnails.mediumResUrl ?? "",
+                          .thumbnails.mediumResUrl,
                   progressIndicatorBuilder: (context, url, downloadProgress) =>
                       CircularProgressIndicator(
                           value: downloadProgress.progress),

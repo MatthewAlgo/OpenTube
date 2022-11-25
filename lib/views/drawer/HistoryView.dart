@@ -6,7 +6,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:libretube/utilities/LocalStorageRepo.dart';
-import 'package:libretube/utilities/VideoUtil.dart';
+import 'package:libretube/utilities/VideoUtilH.dart';
 import 'package:libretube/video/VideoView.dart';
 import 'package:libretube/views/connection/EmptyPage.dart';
 import 'package:libretube/views/connection/ErrorView.dart';
@@ -20,9 +20,9 @@ class HistoryView extends StatefulWidget {
 
   @override
   State<HistoryView> createState() => _HistoryViewState();
-  static List<VideoUtil> listHistoryViewStatic = [];
-  static ValueNotifier<List<VideoUtil>> listHistoryViewStaticNotifier =
-      ValueNotifier<List<VideoUtil>>(listHistoryViewStatic);
+  static List<VideoUtilH> listHistoryViewStatic = [];
+  static ValueNotifier<List<VideoUtilH>> listHistoryViewStaticNotifier =
+      ValueNotifier<List<VideoUtilH>>(listHistoryViewStatic);
 }
 
 class _HistoryViewState extends State<HistoryView> {
@@ -159,8 +159,8 @@ class _HistoryViewState extends State<HistoryView> {
                           // Open The Channel Page using ytExplode
                           ytExp.YoutubeExplode ytExplode =
                               ytExp.YoutubeExplode();
-                          ytExp.Channel playlistVideos = await ytExplode
-                              .channels
+                          ytExp.Video playlistVideos = await ytExplode
+                              .videos
                               .get(HistoryView.listHistoryViewStatic
                                   .elementAt(index)
                                   .id);
@@ -187,7 +187,7 @@ class _HistoryViewState extends State<HistoryView> {
     }
   }
 
-  Widget buildUnsaveButton(VideoUtil savedVideoLocal) {
+  Widget buildUnsaveButton(VideoUtilH savedVideoLocal) {
     return TextButton(
         style: ButtonStyle(
           backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
@@ -216,7 +216,7 @@ class _HistoryViewState extends State<HistoryView> {
                   ),
                   TextButton(
                     onPressed: () async {
-                      VideoUtil video = new VideoUtil(
+                      VideoUtilH video = new VideoUtilH(
                         videoURL: savedVideoLocal.videoURL,
                           id: savedVideoLocal.id,
                           title: savedVideoLocal.title,
@@ -226,7 +226,7 @@ class _HistoryViewState extends State<HistoryView> {
                       LocalStorageRepository localStorageRepository =
                           LocalStorageRepository();
                       Box box = await localStorageRepository.openBoxVideosHistory();
-                      localStorageRepository.removeSavedVideoFromList(
+                      localStorageRepository.removeVideoHistoryFromList(
                           box, video);
 
                       // Assign the channel lists
@@ -245,6 +245,6 @@ class _HistoryViewState extends State<HistoryView> {
                 ],
               ),
             ),
-        child: Text('Remove', style: GoogleFonts.dmSans()));
+        child: Text('Unsave', style: GoogleFonts.dmSans()));
   }
 }

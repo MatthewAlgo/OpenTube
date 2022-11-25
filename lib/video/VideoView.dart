@@ -9,13 +9,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive/hive.dart';
 import 'package:libretube/data/Pair.dart';
+import 'package:libretube/utilities/LocalStorageRepo.dart';
+import 'package:libretube/utilities/VideoUtil.dart';
+import 'package:libretube/utilities/VideoUtilH.dart';
 import 'package:libretube/video/CommentsView.dart';
 import 'package:libretube/video/SameUploaderView.dart';
 import 'package:libretube/video/VideoInfoBottom.dart';
 import 'package:libretube/views/connection/ErrorView.dart';
 import 'package:libretube/views/HomePage.dart';
 import 'package:libretube/views/connection/LoadingView.dart';
+import 'package:libretube/views/drawer/HistoryView.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as exp;
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -40,7 +45,7 @@ class _VideoViewState extends State<VideoView>
   late List<exp.Video> videoData;
   late exp.CommentsList? commentsList;
 
-  PageController _pageController = PageController(keepPage: true);
+  PageController _pageController = PageController(keepPage: true, initialPage: 0);
 
   @override
   bool get wantKeepAlive => true;
@@ -181,7 +186,7 @@ class _VideoViewState extends State<VideoView>
                       Flexible(
                         child: PageView(
                           onPageChanged: (index) {
-                            setState(() => VideoView.selectedpage = index);
+                            setState(() => VideoView.selectedpage = index);  
                           },
                           controller: _pageController,
                           children: <Widget>[
@@ -240,7 +245,8 @@ class _VideoViewState extends State<VideoView>
 
   Future<Pair<exp.Video, exp.Channel>> _getVideoInformation(
       String videoID) async {
-    if (VideoInfoBottomView.numberOfCallsFromTabChange == 0) { // Call this only once per video
+    if (VideoInfoBottomView.numberOfCallsFromTabChange == 0) {
+      // Call this only once per video
       // Get video data from youtube explode
       exp.YoutubeExplode ytExplode = exp.YoutubeExplode();
       exp.Video video = await ytExplode.videos.get(videoID);
@@ -254,11 +260,34 @@ class _VideoViewState extends State<VideoView>
           .toList(); // 25 videos loaded
       // Fetch the list of comments for the video
       commentsList = await ytExplode.videos.comments.getComments(video);
-
       videoData = videos;
+
+      // Add video to history
+      AddVideoToHistory(video);
       return Pair<exp.Video, exp.Channel>(video, channel);
-    }else{
-      return Pair<exp.Video, exp.Channel>(VideoInfoBottomView.savedSnapshot!.getFirst(), VideoInfoBottomView.savedSnapshot!.getSecond());
+    } else {
+      return Pair<exp.Video, exp.Channel>(
+          VideoInfoBottomView.savedSnapshot!.getFirst(),
+          VideoInfoBottomView.savedSnapshot!.getSecond());
     }
+  }
+
+  void AddVideoToHistory(exp.Video video) async {
+    VideoUtilH videoUtil = VideoUtilH(
+      id: video.id.value,
+      title: video.title.toString(),
+      thumbnailURL: video.thumbnails.mediumResUrl.toString(),
+      videoURL: video.url.toString(),
+    );
+
+    LocalStorageRepository localStorageRepository = LocalStorageRepository();
+    Box box = await localStorageRepository.openBoxVideosHistory();
+    localStorageRepository.addVideoHistorytoList(box, videoUtil);
+
+    // Assign the channel lists
+    HistoryView.listHistoryViewStatic =
+        localStorageRepository.getVideosHistoryList(box);
+    HistoryView.listHistoryViewStaticNotifier.value =
+        HistoryView.listHistoryViewStatic;
   }
 }

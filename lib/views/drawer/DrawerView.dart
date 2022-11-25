@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:libretube/views/drawer/HistoryView.dart';
 import 'package:libretube/views/drawer/SavedVideos.dart';
+import 'package:libretube/views/drawer/SettingsView.dart';
 
 class DrawerView extends StatefulWidget {
   const DrawerView({super.key});
@@ -35,7 +37,12 @@ class _DrawerViewState extends State<DrawerView> {
               ),
             ),
             ListTile(
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HistoryView()),
+                );
+              },
               leading: Icon(Icons.fast_rewind_rounded),
               title: Text('Video History'),
             ),
@@ -50,7 +57,12 @@ class _DrawerViewState extends State<DrawerView> {
               title: Text('Saved Videos'),
             ),
             ListTile(
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsView()),
+                );
+              },
               leading: Icon(Icons.settings),
               title: Text('Settings'),
             ),

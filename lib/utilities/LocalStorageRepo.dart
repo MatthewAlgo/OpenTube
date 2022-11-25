@@ -2,6 +2,7 @@ import 'package:hive/hive.dart';
 import 'package:libretube/utilities/BaseLocalStorageRepo.dart';
 import 'package:libretube/utilities/Channel.dart';
 import 'package:libretube/utilities/VideoUtil.dart';
+import 'package:libretube/utilities/VideoUtilH.dart';
 
 class LocalStorageRepository extends BaseLocalStorageRepository {
   String boxName = 'channel_subscriptions';
@@ -66,12 +67,12 @@ class LocalStorageRepository extends BaseLocalStorageRepository {
   // For videos history
   @override
   Future<Box> openBoxVideosHistory() async {
-    Box box = await Hive.openBox<VideoUtil>(videosHistoryBoxName);
+    Box box = await Hive.openBox<VideoUtilH>(videosHistoryBoxName);
     return box;
   }
 
   @override
-  Future<void> addVideoHistorytoList(Box box, VideoUtil video) async {
+  Future<void> addVideoHistorytoList(Box box, VideoUtilH video) async {
     await box.put(video.id, video);
   }
 
@@ -81,12 +82,12 @@ class LocalStorageRepository extends BaseLocalStorageRepository {
   }
 
   @override
-  List<VideoUtil> getVideosHistoryList(Box box) {
-    return box.values.toList() as List<VideoUtil>;
+  List<VideoUtilH> getVideosHistoryList(Box box) {
+    return box.values.toList() as List<VideoUtilH>;
   }
 
   @override
-  Future<void> removeVideoHistoryFromList(Box box, VideoUtil video) async {
+  Future<void> removeVideoHistoryFromList(Box box, VideoUtilH video) async {
     await box.delete(video.id);
   }
 

@@ -219,9 +219,9 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                             Box box = await localStorageRepository
                                 .openBoxSavedVideos();
 
-                            print("video.id: ${video.id}");
+                            print("List for saved videos: ${box.values}");
 
-                            if (!box.containsKey(video.id)) {
+                            if (!box.containsKey(videofromsnapshot.id.toString())) {
                               localStorageRepository.addSavedVideotoList(
                                   box, video);
 

@@ -76,9 +76,12 @@ class _HomePageState extends State<HomePage>
           menuScreen: DrawerView(),
           mainScreen: PageView(
             onPageChanged: (index) {
-              setState(() => selectedpage = index);
+              if (MainView.IS_LOADING_STATE == 0) {
+                setState(() => selectedpage = index);
+              }
             },
             controller: _pageController,
+            physics: NeverScrollableScrollPhysics(),
             children: <Widget>[
               MainView(),
               TrendingView(),
@@ -96,35 +99,32 @@ class _HomePageState extends State<HomePage>
           backgroundColor: Colors.yellow.shade300,
           selectedIndex: selectedpage,
           onItemSelected: (index) {
-            setState(() => selectedpage = index);
-            _pageController.jumpToPage(index);
-            _pageController.animateToPage(index,
-                duration: Duration(milliseconds: 300), curve: Curves.ease);
+            if (MainView.IS_LOADING_STATE == 0) {
+              setState(() => selectedpage = index);
+              _pageController.jumpToPage(index);
+              _pageController.animateToPage(index,
+                  duration: Duration(milliseconds: 300), curve: Curves.ease);
+            }
           },
           items: <BottomNavyBarItem>[
             BottomNavyBarItem(
-              title: Text('Home'),
-              icon: Icon(Icons.home_rounded),
-              textAlign: TextAlign.center
-            ),
+                title: Text('Home'),
+                icon: Icon(Icons.home_rounded),
+                textAlign: TextAlign.center),
             BottomNavyBarItem(
-              title: Text('Trending'),
-              icon: Icon(Icons.trending_up_rounded),
-              textAlign: TextAlign.center
-            ),
+                title: Text('Trending'),
+                icon: Icon(Icons.trending_up_rounded),
+                textAlign: TextAlign.center),
             BottomNavyBarItem(
-              title: Text('Discover'),
-              icon: Icon(Icons.map_rounded),
-              textAlign: TextAlign.center
-            ),
+                title: Text('Discover'),
+                icon: Icon(Icons.map_rounded),
+                textAlign: TextAlign.center),
             BottomNavyBarItem(
-              title: Text("Channels"),
-              icon: Icon(Icons.subscriptions_rounded),
-              textAlign: TextAlign.center
-            ),
+                title: Text("Channels"),
+                icon: Icon(Icons.subscriptions_rounded),
+                textAlign: TextAlign.center),
           ],
         ),
-        
       ),
     );
   }

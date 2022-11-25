@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:libretube/utilities/VideoUtilH.dart';
 
 import 'Channel.dart';
 import 'VideoUtil.dart';
@@ -20,8 +21,8 @@ abstract class BaseLocalStorageRepository {
 
   // For videos history
   Future<Box> openBoxVideosHistory();
-  Future<void> addVideoHistorytoList(Box box, VideoUtil video);
+  Future<void> addVideoHistorytoList(Box box, VideoUtilH video);
   Future<void> clearVideosHistoryList(Box box);
-  List<VideoUtil> getVideosHistoryList(Box box);
-  Future<void> removeVideoHistoryFromList(Box box, VideoUtil video);
+  List<VideoUtilH> getVideosHistoryList(Box box);
+  Future<void> removeVideoHistoryFromList(Box box, VideoUtilH video);
 }

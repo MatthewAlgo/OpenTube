@@ -13,6 +13,7 @@ import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:libretube/utilities/VideoUtil.dart';
+import 'package:libretube/utilities/VideoUtilH.dart';
 import 'package:libretube/views/DiscoverView.dart';
 import 'package:libretube/views/HomePage.dart';
 import 'package:libretube/views/connection/NoResultsView.dart';
@@ -41,6 +42,7 @@ class MainView extends StatefulWidget {
   static String searchQuery = "";
   static bool loadingState = false; // Acts like a pseudo-mutex
   static int init_counter_from_rebuild = 0;
+  static int IS_LOADING_STATE = 0;
 
   static ValueNotifier<bool> wannaRebuild = ValueNotifier(false);
 
@@ -111,7 +113,7 @@ class _MainViewState extends State<MainView>
                       title: Text(list.elementAt(index).title,
                           style:
                               GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
-                      subtitle: Text(list.elementAt(index).description ?? "",
+                      subtitle: Text(list.elementAt(index).description,
                           style: GoogleFonts.dmSans()),
                       leading: Container(
                         decoration: BoxDecoration(
@@ -210,20 +212,23 @@ class _MainViewState extends State<MainView>
 
   Future<List<Video>> _updateState() async {
     // Function used to fill search and user interaction buffers
+    MainView.IS_LOADING_STATE = 1;
+
     LocalStorageRepository localStorageRepository = LocalStorageRepository();
     Box box = await localStorageRepository.openBox();
     Box box2 = await localStorageRepository.openBoxSavedVideos();
     Box box3 = await localStorageRepository.openBoxVideosHistory();
 
     List<chan.Channel> channels = localStorageRepository.getChannelList(box);
-    List<VideoUtil> videosSaved =
+    SavedVideos.listSavedVideosStatic =
         localStorageRepository.getSavedVideosList(box2);
-    List<VideoUtil> videosHistory =
-        localStorageRepository.getVideosHistoryList(box3);
 
-    SavedVideos.listSavedVideosStatic = videosSaved;
-    HistoryView.listHistoryViewStatic = videosHistory;
-    
+    // Assign the channel lists
+    HistoryView.listHistoryViewStatic =
+        localStorageRepository.getVideosHistoryList(box3);
+    HistoryView.listHistoryViewStaticNotifier.value =
+        HistoryView.listHistoryViewStatic;
+
     SubscriptionsView.listChannelStatic = channels; // Fill the static variable
     SubscriptionsList.subscriptionsChannel =
         channels; // Fill the buffer for the channels
@@ -232,14 +237,13 @@ class _MainViewState extends State<MainView>
     try {
       MainView.loadingState = true;
       if (!comingFromFetch) {
-        MainView.searchQuery = HomePage.editingController.text ?? "";
+        MainView.searchQuery = HomePage.editingController.text;
         VideosSearched = await getSearch(MainView.searchQuery, context);
         VideosSearchedList = assignData();
 
         dataapi.YoutubeDataApi youtubeDataApi = dataapi.YoutubeDataApi();
         YoutubeExplode explodeYt = YoutubeExplode();
 
-        // Get the result of search "Flutter"
         VideoSearchList searchResultNews =
             await explodeYt.search.search("World News");
         VideoSearchList searchResultWeather =
@@ -296,7 +300,9 @@ class _MainViewState extends State<MainView>
       } else {
         comingFromFetch = false;
       }
+      
       MainView.loadingState = false;
+      MainView.IS_LOADING_STATE = 0;
       return VideosSearchedList;
     } on Exception catch (e) {
       print("Error: ${e.toString()}");
