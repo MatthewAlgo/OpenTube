@@ -21,6 +21,7 @@ import 'package:libretube/views/connection/ErrorView.dart';
 import 'package:libretube/views/HomePage.dart';
 import 'package:libretube/views/connection/LoadingView.dart';
 import 'package:libretube/views/drawer/HistoryView.dart';
+import 'package:libretube/views/drawer/SettingsView.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as exp;
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -45,7 +46,8 @@ class _VideoViewState extends State<VideoView>
   late List<exp.Video> videoData;
   late exp.CommentsList? commentsList;
 
-  PageController _pageController = PageController(keepPage: true, initialPage: 0);
+  PageController _pageController =
+      PageController(keepPage: true, initialPage: 0);
 
   @override
   bool get wantKeepAlive => true;
@@ -53,6 +55,8 @@ class _VideoViewState extends State<VideoView>
   @override
   void initState() {
     VideoInfoBottomView.numberOfCallsFromTabChange = 0;
+    VideoView.selectedpage = 0;
+
     _pageController = PageController();
     _editingcontroller = TextEditingController();
     autoPlay = true;
@@ -120,8 +124,8 @@ class _VideoViewState extends State<VideoView>
                                     onSuffixTap: () {
                                       Navigator.pop(context);
                                       setState(() async {
-                                        HomePage.editingController =
-                                            _editingcontroller;
+                                        HomePage.editingController.text =
+                                            _editingcontroller.text;
                                       });
                                     },
                                   ),
@@ -186,7 +190,7 @@ class _VideoViewState extends State<VideoView>
                       Flexible(
                         child: PageView(
                           onPageChanged: (index) {
-                            setState(() => VideoView.selectedpage = index);  
+                            setState(() => VideoView.selectedpage = index);
                           },
                           controller: _pageController,
                           children: <Widget>[
@@ -204,7 +208,7 @@ class _VideoViewState extends State<VideoView>
                           Orientation.landscape
                       ? null // show nothing in lanscape mode
                       : BottomNavyBar(
-                          backgroundColor: Colors.yellow.shade300,
+                          backgroundColor: Color.fromARGB(255, 255, 255, 255),
                           selectedIndex: VideoView.selectedpage,
                           onItemSelected: (index) {
                             setState(() => VideoView.selectedpage = index);
@@ -273,21 +277,30 @@ class _VideoViewState extends State<VideoView>
   }
 
   void AddVideoToHistory(exp.Video video) async {
-    VideoUtilH videoUtil = VideoUtilH(
-      id: video.id.value,
-      title: video.title.toString(),
-      thumbnailURL: video.thumbnails.mediumResUrl.toString(),
-      videoURL: video.url.toString(),
-    );
+    // Only add video to history if the user wants to
+    if (SettingsView.IS_HISTORY_ENABLED) {
+      VideoUtilH videoUtil = VideoUtilH(
+        id: video.id.value,
+        title: video.title.toString(),
+        thumbnailURL: video.thumbnails.mediumResUrl.toString(),
+        videoURL: video.url.toString(),
+      );
 
-    LocalStorageRepository localStorageRepository = LocalStorageRepository();
-    Box box = await localStorageRepository.openBoxVideosHistory();
-    localStorageRepository.addVideoHistorytoList(box, videoUtil);
+      LocalStorageRepository localStorageRepository = LocalStorageRepository();
+      Box box = await localStorageRepository.openBoxVideosHistory();
+      localStorageRepository.addVideoHistorytoList(box, videoUtil);
 
-    // Assign the channel lists
-    HistoryView.listHistoryViewStatic =
-        localStorageRepository.getVideosHistoryList(box);
-    HistoryView.listHistoryViewStaticNotifier.value =
-        HistoryView.listHistoryViewStatic;
+      // Assign the channel lists
+      HistoryView.listHistoryViewStatic =
+          localStorageRepository.getVideosHistoryList(box);
+      HistoryView.listHistoryViewStaticNotifier.value =
+          HistoryView.listHistoryViewStatic;
+    }else{
+      // Show a snackbar
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Video history is disabled"),
+        duration: Duration(seconds: 2),
+      ));
+    }
   }
 }

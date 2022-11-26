@@ -71,6 +71,7 @@ class _HomePageState extends State<HomePage>
       theme: ThemeData(useMaterial3: true),
       home: Scaffold(
         appBar: buildHigherSearchBar(),
+        resizeToAvoidBottomInset: false,
         body: ZoomDrawer(
           controller: _drawerController,
           menuScreen: DrawerView(),
@@ -96,7 +97,7 @@ class _HomePageState extends State<HomePage>
           slideWidth: MediaQuery.of(context).size.width * 0.65,
         ),
         bottomNavigationBar: BottomNavyBar(
-          backgroundColor: Colors.yellow.shade300,
+          backgroundColor: Color.fromARGB(225, 255, 255, 255),
           selectedIndex: selectedpage,
           onItemSelected: (index) {
             if (MainView.IS_LOADING_STATE == 0) {

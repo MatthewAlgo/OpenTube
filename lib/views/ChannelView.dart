@@ -23,20 +23,20 @@ class ChannelView extends StatefulWidget {
 }
 
 class _ChannelViewState extends State<ChannelView> {
-  TextEditingController _textEditingController = TextEditingController();
+  TextEditingController _editingcontroller = TextEditingController();
   ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _textEditingController = TextEditingController();
+    _editingcontroller = TextEditingController();
     _scrollController = ScrollController();
   }
 
   @override
   void dispose() {
     super.dispose();
-    _textEditingController.dispose();
+    _editingcontroller.dispose();
     _scrollController.dispose();
   }
 
@@ -44,6 +44,7 @@ class _ChannelViewState extends State<ChannelView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: buildTopAppBar(),
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.pink.shade100,
       body: FutureBuilder<ChannelUploadsList>(
         future: loadVideosFromChannel(),
@@ -62,8 +63,7 @@ class _ChannelViewState extends State<ChannelView> {
                     imageUrl: widget.localChannel.bannerUrl,
                     placeholder: (context, url) => Container(
                       decoration: BoxDecoration(
-                          shape: BoxShape.rectangle,
-                          color: Colors.white),
+                          shape: BoxShape.rectangle, color: Colors.white),
                       child: Center(
                         child: LoadingAnimationWidget.horizontalRotatingDots(
                           color: Colors.blue,
@@ -341,11 +341,11 @@ class _ChannelViewState extends State<ChannelView> {
                 suffixIcon: Icon(Icons.send),
                 prefixIcon: Icon(Icons.search_outlined),
                 width: MediaQuery.of(context).size.width,
-                textController: _textEditingController,
+                textController: _editingcontroller,
                 onSuffixTap: () {
                   Navigator.pop(context);
                   setState(() async {
-                    HomePage.editingController = _textEditingController;
+                    HomePage.editingController.text = _editingcontroller.text;
                   });
                 },
               ),

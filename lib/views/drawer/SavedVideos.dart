@@ -74,7 +74,7 @@ class _SavedVideosState extends State<SavedVideos> {
                         onSuffixTap: () {
                           Navigator.pop(context);
                           setState(() async {
-                            HomePage.editingController = _editingcontroller;
+                            HomePage.editingController.text = _editingcontroller.text;
                           });
                         },
                       ),

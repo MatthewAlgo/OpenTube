@@ -9,8 +9,10 @@ import 'package:libretube/views/connection/ErrorView.dart';
 import 'package:libretube/views/HomePage.dart';
 import 'package:libretube/video/VideoView.dart';
 import 'package:libretube/views/connection/LoadingView.dart';
+import 'package:libretube/views/drawer/SettingsView.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// TODO: Repair search bar weird behavior
 /// TODO: Add a splash screen
@@ -24,6 +26,10 @@ Future<void> main() async {
   Hive.registerAdapter(ChannelAdapter());
   Hive.registerAdapter(VideoUtilAdapter());
   Hive.registerAdapter(VideoUtilHAdapter());
+
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  SettingsView.IS_DARK_MODE = prefs.getBool('isDarkModeEnabled') ?? false;
+  SettingsView.IS_HISTORY_ENABLED = prefs.getBool('isHistoryEnabled') ?? true;
 
   runApp(MaterialApp(
       theme: ThemeData(

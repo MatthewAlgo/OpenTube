@@ -66,6 +66,7 @@ dependencies:
   curved_navigation_bar: ^1.0.3
   bottom_navy_bar: ^6.0.0
   flutter_screenutil: ^5.5.4
+  shared_preferences: ^2.0.15
   
 
 
