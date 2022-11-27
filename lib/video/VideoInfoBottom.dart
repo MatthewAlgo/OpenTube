@@ -189,7 +189,11 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                             Icons.download,
                             size: 12.0,
                           ),
-                          onPressed: () {},
+                          onPressed: () async{
+                            DownloaderForYoutube downloaderForYoutube =
+                                DownloaderForYoutube();
+                            await downloaderForYoutube.downloadYoutubeVideoFunc(context, videofromsnapshot.url.toString());
+                          },
                         ),
                         FloatingActionButton.extended(
                           label: Text(
@@ -277,7 +281,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                           onPressed: () async {
                             DownloaderForYoutube downloaderForYoutube =
                                 DownloaderForYoutube();
-                            await downloaderForYoutube.downloadYoutubeVideoFunc(context, videofromsnapshot.url.toString());
+                            await downloaderForYoutube.downloadYoutubeAudioFunc(context, videofromsnapshot.url.toString());
                           },
                         ),
                       ],

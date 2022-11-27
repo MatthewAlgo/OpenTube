@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:get/get_connect/http/src/request/request.dart';
@@ -11,24 +12,93 @@ class DownloaderForYoutube {
     Directory appDocDirectory = await getApplicationDocumentsDirectory();
 
     // If the directory doesn't exist, create it
-    if (!await Directory(appDocDirectory.path + '/videos').exists()) {
-      await Directory(appDocDirectory.path + '/videos').create();
+    if (!await Directory("/storage/emulated/0/Download" + '/libretube-video')
+        .exists()) {
+      await Directory("/storage/emulated/0/Download" + '/libretube-video')
+          .create();
     }
 
     var yt = YoutubeExplode();
-    var video = await yt.videos.get(url);
-    var manifest = await yt.videos.streamsClient.getManifest(url);
-    var streamInfo = manifest.muxed.first;
-    var stream = yt.videos.streamsClient.get(streamInfo);
-    var file = File('${appDocDirectory.path}/videos/${video.title}.mp4');
-    await file.writeAsBytes(await stream.toBytes());
-    // Show a snackbar, according to the platform.
+    var videoData = await yt.videos.get(url);
+    var streamManifest = await yt.videos.streamsClient.getManifest(url);
+    // Get highest quality muxed stream
+    var streamInfo = streamManifest.muxed.bestQuality;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Downloaded ${video.title} at ${file.path.toString()}'),
-      ),
-    );
-    return file.path;
+    if (streamInfo != null) {
+      // Get the actual stream
+      var stream = yt.videos.streamsClient.get(streamInfo);
+
+      // Open a file for writing.
+      var file = File(
+          '/storage/emulated/0/Download/libretube-video/${videoData.title}.mp4');
+      var fileStream = file.openWrite();
+
+      // Pipe all the content of the stream into the file.
+      await stream.pipe(fileStream);
+
+      // Close the file.
+      await fileStream.flush();
+      await fileStream.close();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text('Downloaded ${videoData.title} at ${file.path.toString()}'),
+        ),
+      );
+      return '/storage/emulated/0/Download/libretube-video/${videoData.title}.mp4';
+    }
+    return '';
+  }
+
+  // Download audio only from youtube
+  Future<String> downloadYoutubeAudioFunc(
+      BuildContext context, String url) async {
+    Directory appDocDirectory = await getApplicationDocumentsDirectory();
+
+    // If the directory doesn't exist, create it
+    if (!await Directory("/storage/emulated/0/Download" + '/libretube-audio')
+        .exists()) {
+      await Directory("/storage/emulated/0/Download" + '/libretube-audio')
+          .create();
+    }
+
+    var yt = YoutubeExplode();
+    var audioData = await yt.videos.get(url);
+    var streamManifest = await yt.videos.streamsClient.getManifest(url);
+    // Get highest quality muxed stream
+    var streamInfo = streamManifest.audioOnly.withHighestBitrate();
+
+    if (streamInfo != null) {
+      // Get the actual stream
+      var stream = yt.videos.streamsClient.get(streamInfo);
+
+      // Open a file for writing.
+      var file = File(
+          '/storage/emulated/0/Download/libretube-audio/${audioData.title}.mp4');
+      var fileStream = file.openWrite();
+
+      // Pipe all the content of the stream into the file.
+      await stream.pipe(fileStream);
+
+      // Close the file.
+      await fileStream.flush();
+      await fileStream.close();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text('Downloaded ${audioData.title} at ${file.path.toString()}'),
+        ),
+      );
+      return '/storage/emulated/0/Download/libretube-audio/${audioData.title}.mp4';
+    }
+    return '';
+  }
+
+  Future<void> writeToFile(ByteData data, String path) {
+    final buffer = data.buffer;
+    return new File(path).writeAsBytes(
+        buffer.asUint8List(data.offsetInBytes, data.lengthInBytes));
   }
 }
