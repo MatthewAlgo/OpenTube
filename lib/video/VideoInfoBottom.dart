@@ -5,6 +5,7 @@ import 'package:flutter_share/flutter_share.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:libretube/data/Pair.dart';
+import 'package:libretube/utilities/Downloader.dart';
 import 'package:libretube/utilities/LocalStorageRepo.dart';
 import 'package:libretube/utilities/VideoUtil.dart';
 import 'package:libretube/views/connection/ErrorView.dart';
@@ -273,7 +274,11 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                             size: 12.0,
                           ),
                           // Start downloading youtube video from server
-                          onPressed: () {},
+                          onPressed: () async {
+                            DownloaderForYoutube downloaderForYoutube =
+                                DownloaderForYoutube();
+                            await downloaderForYoutube.downloadYoutubeVideoFunc(context, videofromsnapshot.url.toString());
+                          },
                         ),
                       ],
                     )

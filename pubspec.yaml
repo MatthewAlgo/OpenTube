@@ -67,7 +67,7 @@ dependencies:
   bottom_navy_bar: ^6.0.0
   flutter_screenutil: ^5.5.4
   shared_preferences: ^2.0.15
-  
+  flutter_downloader: ^1.9.1
 
 
 dev_dependencies:

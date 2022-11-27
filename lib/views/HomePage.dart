@@ -49,7 +49,6 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     _drawerController = ZoomDrawerController();
-    HomePage.editingController = TextEditingController();
     _pageController = PageController(initialPage: 0, keepPage: true);
     super.initState();
   }
@@ -77,7 +76,7 @@ class _HomePageState extends State<HomePage>
           menuScreen: DrawerView(),
           mainScreen: PageView(
             onPageChanged: (index) {
-              if (MainView.IS_LOADING_STATE == 0) {
+              if (MainView.isLoadingState == 0) {
                 setState(() => selectedpage = index);
               }
             },
@@ -100,7 +99,7 @@ class _HomePageState extends State<HomePage>
           backgroundColor: Color.fromARGB(225, 255, 255, 255),
           selectedIndex: selectedpage,
           onItemSelected: (index) {
-            if (MainView.IS_LOADING_STATE == 0) {
+            if (MainView.isLoadingState == 0) {
               setState(() => selectedpage = index);
               _pageController.jumpToPage(index);
               _pageController.animateToPage(index,

@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:libretube/utilities/LocalStorageRepo.dart';
 import 'package:libretube/views/ChannelView.dart';
 import 'package:libretube/views/HomePage.dart';
+import 'package:libretube/views/MainView.dart';
 import 'package:libretube/views/SubscriptionsView.dart';
 import 'package:libretube/views/drawer/HistoryView.dart';
 import 'package:libretube/views/drawer/SavedVideos.dart';
@@ -63,18 +64,6 @@ class _SettingsViewState extends State<SettingsView> {
                   alignment: Alignment.center,
                   child: Row(
                     children: <Widget>[
-                      AnimSearchBar(
-                        suffixIcon: Icon(Icons.send),
-                        prefixIcon: Icon(Icons.search_outlined),
-                        width: MediaQuery.of(context).size.width,
-                        textController: _editingcontroller,
-                        onSuffixTap: () {
-                          Navigator.pop(context);
-                          setState(() async {
-                            HomePage.editingController.text = _editingcontroller.text;
-                          });
-                        },
-                      ),
                       Expanded(
                         child: Center(
                             child: Padding(
@@ -168,12 +157,11 @@ class _SettingsViewState extends State<SettingsView> {
                               onPressed: () async {
                                 await box.clear();
                                 // Assign the video lists
-                              HistoryView.listHistoryViewStatic = [];
-                              HistoryView.listHistoryViewStaticNotifier.value =
-                                  HistoryView.listHistoryViewStatic;
+                                HistoryView.listHistoryViewStatic = [];
+                                HistoryView.listHistoryViewStaticNotifier
+                                    .value = HistoryView.listHistoryViewStatic;
 
                                 Navigator.of(context).pop();
-  
                               },
                             ),
                           ],
@@ -208,14 +196,13 @@ class _SettingsViewState extends State<SettingsView> {
                             ),
                             TextButton(
                               child: const Text('Delete'),
-                              onPressed: () async{
+                              onPressed: () async {
                                 await box.clear();
                                 // Assign the video lists
-                              SavedVideos.listSavedVideosStatic = [];
-                              SavedVideos.listSavedVideosStaticNotifier.value =
-                                  SavedVideos.listSavedVideosStatic;
+                                SavedVideos.listSavedVideosStatic = [];
+                                SavedVideos.listSavedVideosStaticNotifier
+                                    .value = SavedVideos.listSavedVideosStatic;
                                 Navigator.of(context).pop();
-                              
                               },
                             ),
                           ],
@@ -255,7 +242,8 @@ class _SettingsViewState extends State<SettingsView> {
                                 await box.clear();
                                 // Clear the list of channels
                                 SubscriptionsView.listChannelStatic = [];
-                                SubscriptionsView.listChannelStaticNotifier.value =
+                                SubscriptionsView
+                                        .listChannelStaticNotifier.value =
                                     SubscriptionsView.listChannelStatic;
 
                                 Navigator.of(context).pop();

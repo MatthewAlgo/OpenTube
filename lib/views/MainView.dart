@@ -42,7 +42,9 @@ class MainView extends StatefulWidget {
   static String searchQuery = "";
   static bool loadingState = false; // Acts like a pseudo-mutex
   static int init_counter_from_rebuild = 0;
-  static int IS_LOADING_STATE = 0;
+  static List<Video> VideosSearchedList = [];
+  
+  static int isLoadingState = 0;
 
   static ValueNotifier<bool> wannaRebuild = ValueNotifier(false);
 
@@ -53,7 +55,7 @@ class MainView extends StatefulWidget {
 class _MainViewState extends State<MainView>
     with AutomaticKeepAliveClientMixin<MainView> {
   late VideoSearchList VideosSearched;
-  List<Video> VideosSearchedList = [];
+  
   final ScrollController controller = ScrollController();
   static bool comingFromFetch = false;
 
@@ -175,7 +177,7 @@ class _MainViewState extends State<MainView>
             if (snapshot.hasError) {
               return const ErrorView();
             } else if (snapshot.hasData) {
-              return BuildCards(context, VideosSearchedList);
+              return BuildCards(context, MainView.VideosSearchedList);
             } else if (snapshot.data?.isEmpty ?? true) {
               return NoResultsView();
             } else {
@@ -187,14 +189,14 @@ class _MainViewState extends State<MainView>
         },
       );
     } else {
-      return BuildCards(context, VideosSearchedList);
+      return BuildCards(context, MainView.VideosSearchedList);
     }
   }
 
   Future _fetchNewData() async {
     MainView.loadingState = true;
     VideosSearched = await appendToSearchList(VideosSearched, context);
-    VideosSearchedList = assignData();
+    MainView.VideosSearchedList = assignData();
     MainView.loadingState = false;
     comingFromFetch = true;
     setState(() {});
@@ -206,13 +208,13 @@ class _MainViewState extends State<MainView>
     while (videoIterator.moveNext()) {
       myVideoList.add(videoIterator.current);
     }
-    VideosSearchedList = myVideoList;
+    MainView.VideosSearchedList = myVideoList;
     return myVideoList;
   }
 
   Future<List<Video>> _updateState() async {
     // Function used to fill search and user interaction buffers
-    MainView.IS_LOADING_STATE = 1;
+    MainView.isLoadingState = 1;
 
     LocalStorageRepository localStorageRepository = LocalStorageRepository();
     Box box = await localStorageRepository.openBox();
@@ -239,7 +241,7 @@ class _MainViewState extends State<MainView>
       if (!comingFromFetch) {
         MainView.searchQuery = HomePage.editingController.text;
         VideosSearched = await getSearch(MainView.searchQuery, context);
-        VideosSearchedList = assignData();
+        MainView.VideosSearchedList = assignData();
 
         dataapi.YoutubeDataApi youtubeDataApi = dataapi.YoutubeDataApi();
         YoutubeExplode explodeYt = YoutubeExplode();
@@ -302,11 +304,11 @@ class _MainViewState extends State<MainView>
       }
       
       MainView.loadingState = false;
-      MainView.IS_LOADING_STATE = 0;
-      return VideosSearchedList;
+      MainView.isLoadingState = 0;
+      return MainView.VideosSearchedList;
     } on Exception catch (e) {
       print("Error: ${e.toString()}");
-      return VideosSearchedList;
+      return MainView.VideosSearchedList;
     }
   }
 
@@ -319,6 +321,6 @@ class _MainViewState extends State<MainView>
     setState(() async {
       await _updateState();
     });
-    return VideosSearchedList;
+    return MainView.VideosSearchedList;
   }
 }

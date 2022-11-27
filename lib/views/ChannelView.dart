@@ -337,18 +337,6 @@ class _ChannelViewState extends State<ChannelView> {
           alignment: Alignment.center,
           child: Row(
             children: <Widget>[
-              AnimSearchBar(
-                suffixIcon: Icon(Icons.send),
-                prefixIcon: Icon(Icons.search_outlined),
-                width: MediaQuery.of(context).size.width,
-                textController: _editingcontroller,
-                onSuffixTap: () {
-                  Navigator.pop(context);
-                  setState(() async {
-                    HomePage.editingController.text = _editingcontroller.text;
-                  });
-                },
-              ),
               Expanded(
                 child: Center(
                     child: Padding(
