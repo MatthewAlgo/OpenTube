@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_share/flutter_share.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:libretube/data/Pair.dart';
-import 'package:libretube/utilities/Downloader.dart';
+import 'package:libretube/services/Downloader.dart';
+import 'package:libretube/services/NotificationManager.dart';
 import 'package:libretube/utilities/LocalStorageRepo.dart';
 import 'package:libretube/utilities/VideoUtil.dart';
 import 'package:libretube/views/connection/ErrorView.dart';
@@ -47,9 +49,13 @@ class VideoInfoBottomView extends StatefulWidget {
 class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
     with AutomaticKeepAliveClientMixin {
   List<viddata.Video> relatedVideos = [];
+  // late final LocalNotificationService service;
+  // LocalNotificationService service = LocalNotificationService();
 
   @override
   void initState() {
+    // service = LocalNotificationService();
+    // service.initialize();
     super.initState();
   }
 
@@ -65,7 +71,7 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
     if (MediaQuery.of(context).orientation == Orientation.landscape) {
       VideoView.selectedpage = 0;
     }
-    
+
     if (VideoInfoBottomView.numberOfCallsFromTabChange != 1) {
       return getPageBody(context, VideoInfoBottomView.savedSnapshot!);
     } else {
@@ -189,10 +195,11 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                             Icons.download,
                             size: 12.0,
                           ),
-                          onPressed: () async{
+                          onPressed: () async {
                             DownloaderForYoutube downloaderForYoutube =
                                 DownloaderForYoutube();
-                            await downloaderForYoutube.downloadYoutubeVideoFunc(context, videofromsnapshot.url.toString());
+                            await downloaderForYoutube.writeVideoFile(
+                                context, videofromsnapshot.id.toString());
                           },
                         ),
                         FloatingActionButton.extended(
@@ -226,7 +233,8 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
 
                             print("List for saved videos: ${box.values}");
 
-                            if (!box.containsKey(videofromsnapshot.id.toString())) {
+                            if (!box
+                                .containsKey(videofromsnapshot.id.toString())) {
                               localStorageRepository.addSavedVideotoList(
                                   box, video);
 
@@ -281,7 +289,10 @@ class _VideoInfoBottomViewState extends State<VideoInfoBottomView>
                           onPressed: () async {
                             DownloaderForYoutube downloaderForYoutube =
                                 DownloaderForYoutube();
-                            await downloaderForYoutube.downloadYoutubeAudioFunc(context, videofromsnapshot.url.toString());
+                            // await service.showNotification(1, 'Downloading...', "Now downloading");
+                            await downloaderForYoutube.writeAudioFile(
+                                context, videofromsnapshot.id.toString());
+                            // await service.showNotification(2, 'Downloaded', "Downloaded");
                           },
                         ),
                       ],
