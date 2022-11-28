@@ -1,5 +1,5 @@
-name: libretube
-description: A new Flutter project.
+name: OpenTube
+description: A YouTube client, viewer and downloader in Flutter
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -36,31 +36,41 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
 
-  convex_bottom_bar: 3.0.0
-  new_gradient_app_bar: 0.2.0
-  animation_search_bar: 0.0.9
-  google_fonts: 3.0.1
-  youtube_explode_dart: ^1.10.4
-  loading_animation_widget: 1.2.0+2
-  youtube_player_flutter: 8.1.0
-  anim_search_bar: 2.0.2
-  flutter_image: 4.1.4
-  transparent_image: ^1.0.0
-  cached_network_image: 3.2.1 
+  convex_bottom_bar: ^3.1.0+1
+  new_gradient_app_bar: ^0.2.0
+  animation_search_bar: ^0.0.9
+  google_fonts: ^3.0.1
+  youtube_explode_dart: ^1.12.3
+  loading_animation_widget: ^1.2.0+3
+  youtube_player_flutter: ^8.1.1
+  anim_search_bar: ^2.0.2
+  flutter_image: ^4.1.4
+  transparent_image: ^2.0.0
+  cached_network_image: ^3.2.2 
   shimmer: ^2.0.0
-  hexcolor: ^2.0.7
-  flutter_local_notifications: 9.9.0
-  like_button: 2.0.4
-  youtube_data_api: 1.0.4
-  flutter_share: 2.0.0
-  share_plus: ^4.0.10+1
+  hexcolor: ^3.0.1
+  flutter_local_notifications: ^12.0.4
+  like_button: ^2.0.5
+  youtube_data_api: ^1.0.4
+  flutter_share: ^2.0.0
+  share_plus: ^6.3.0
   json_store: ^2.0.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   path_provider: ^2.0.11
-  build_runner: 
-  hive_generator:
+  build_runner: any
+  hive_generator: any
   flutter_native_splash: ^2.2.11
+  flutter_zoom_drawer: ^3.0.3
+  get: ^4.6.5
+  curved_navigation_bar: ^1.0.3
+  bottom_navy_bar: ^6.0.0
+  flutter_screenutil: ^5.5.4
+  shared_preferences: ^2.0.15
+  flutter_downloader: ^1.9.1
+  permission_handler: ^10.2.0
+  timezone: ^0.9.0
+  rxdart: ^0.27.7
 
 
 dev_dependencies:

@@ -1,6 +1,6 @@
 {
-    "name": "libretube",
-    "short_name": "libretube",
+    "name": "OpenTube",
+    "short_name": "OpenTube",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

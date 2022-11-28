@@ -2,12 +2,16 @@ import 'package:anim_search_bar/anim_search_bar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:libretube/views/ErrorView.dart';
-import 'package:libretube/views/LoadingView.dart';
+import 'package:OpenTube/utilities/YouTube.dart';
+import 'package:OpenTube/views/connection/ErrorView.dart';
+import 'package:OpenTube/views/connection/LoadingView.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as ytExp;
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import '../video/VideoView.dart';
+import 'HomePage.dart';
+import 'MainView.dart';
 
 class ChannelView extends StatefulWidget {
   const ChannelView({super.key, required ytExp.Channel this.localChannel});
@@ -19,246 +23,296 @@ class ChannelView extends StatefulWidget {
 }
 
 class _ChannelViewState extends State<ChannelView> {
-  TextEditingController _textEditingController = TextEditingController();
+  TextEditingController _editingcontroller = TextEditingController();
   ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _textEditingController = TextEditingController();
+    _editingcontroller = TextEditingController();
     _scrollController = ScrollController();
   }
 
   @override
   void dispose() {
     super.dispose();
-    _textEditingController.dispose();
+    _editingcontroller.dispose();
     _scrollController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-          preferredSize: const Size(double.infinity, 65),
-          child: SafeArea(
-              child: Container(
-            decoration: const BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 5,
-                      spreadRadius: 0,
-                      offset: Offset(0, 5))
-                ],
-                borderRadius: BorderRadius.all(Radius.circular(20))),
-            alignment: Alignment.center,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                AnimSearchBar(
-                  suffixIcon: Icon(Icons.send),
-                  prefixIcon: Icon(Icons.search_outlined),
-                  width: MediaQuery.of(context).size.width,
-                  textController: _textEditingController,
-                  onSuffixTap: () {},
+      appBar: buildTopAppBar(),
+      resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.pink.shade100,
+      body: FutureBuilder<ChannelUploadsList>(
+        future: loadVideosFromChannel(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const LoadingView();
+          } else if (snapshot.hasError) {
+            return const ErrorView();
+          } else if (snapshot.hasData) {
+            return ListView(
+              shrinkWrap: true,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: CachedNetworkImage(
+                    imageUrl: widget.localChannel.bannerUrl,
+                    placeholder: (context, url) => Container(
+                      decoration: BoxDecoration(
+                          shape: BoxShape.rectangle, color: Colors.white),
+                      child: Center(
+                        child: LoadingAnimationWidget.horizontalRotatingDots(
+                          color: Colors.blue,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Icon(Icons.error),
+                  ),
                 ),
                 Expanded(
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    decoration: new BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.rectangle,
+                      border: Border.all(width: 5.0, color: Colors.white),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: CircleAvatar(
+                            backgroundImage:
+                                NetworkImage(widget.localChannel.logoUrl),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Column(
+                            children: [
+                              Text(widget.localChannel.title,
+                                  style: GoogleFonts.dmSans(
+                                      fontWeight: FontWeight.bold)),
+                              Text(
+                                  '${widget.localChannel.subscribersCount} Subscribers',
+                                  style: GoogleFonts.dmSans()),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Align(
+                            // <---  these 2 lines fixed it
+                            alignment: Alignment
+                                .centerRight, // <---  these 2 lines fixed it
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: TextButton(
+                                  style: ButtonStyle(
+                                    backgroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            Colors.red),
+                                    foregroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            Colors.white),
+                                    overlayColor: MaterialStateProperty
+                                        .resolveWith<Color?>(
+                                      (Set<MaterialState> states) {
+                                        if (states
+                                            .contains(MaterialState.hovered))
+                                          return Colors.blue.withOpacity(0.04);
+                                        if (states.contains(
+                                                MaterialState.focused) ||
+                                            states.contains(
+                                                MaterialState.pressed))
+                                          return Colors.blue.withOpacity(0.12);
+                                        return null; // Defer to the widget's default.
+                                      },
+                                    ),
+                                  ),
+                                  onPressed: () async {
+                                    // Get channel data from Youtube API
+                                  },
+                                  child: Text('Subscribe',
+                                      style: GoogleFonts.dmSans())),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                ListView.builder(
+                    controller: _scrollController,
+                    shrinkWrap: true,
+                    physics: const ClampingScrollPhysics(),
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      print("Reached widget building ${snapshot.data!.length}");
+                      if (snapshot.data != null) {
+                        if (index < snapshot.data!.length) {
+                          return Card(
+                              child: ListTile(
+                                  title: Text(
+                                      snapshot.data!
+                                          .elementAt(index)
+                                          .title
+                                          .toString(),
+                                      style: GoogleFonts.dmSans(
+                                          fontWeight: FontWeight.bold)),
+                                   subtitle: Column(
+                              children: [
+                                Text(
+                                    snapshot.data!
+                                        .elementAt(index)
+                                        .author
+                                        .toString(),
+                                    style: GoogleFonts.dmSans(
+                                        fontWeight: FontWeight.bold)),
+                                Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                ),
+                                Text(snapshot.data!.elementAt(index).description.toString(),
+                                    style: GoogleFonts.dmSans(
+                                        fontWeight: FontWeight.bold)),
+                                Text(snapshot.data!.elementAt(index).uploadDate.toString() != 
+                                "null" ? getVideoDate(snapshot.data!.elementAt(index).uploadDate.toString()) : "Upload Date not available",
+                                    style: GoogleFonts.dmSans(
+                                        fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                                  leading: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(8.0)),
+                                      color: Colors.white,
+                                    ),
+                                    child: CachedNetworkImage(
+                                      imageUrl: snapshot.data!
+                                          .elementAt(index)
+                                          .thumbnails
+                                          .mediumResUrl,
+                                      progressIndicatorBuilder: (context, url,
+                                              downloadProgress) =>
+                                          CircularProgressIndicator(
+                                              value: downloadProgress.progress),
+                                      errorWidget: (context, url, error) =>
+                                          Icon(Icons.error),
+                                    ),
+                                  ),
+                                  trailing: Builder(builder: (context) {
+                                    return Column(
+                                      children: [
+                                        const SizedBox(
+                                          child: Icon(Icons.play_arrow),
+                                        ),
+                                        Container(
+                                          margin: EdgeInsets.only(top: 4),
+                                          child: const SizedBox(
+                                            child: Icon(Icons.bookmark),
+                                          ),
+                                        )
+                                      ],
+                                    );
+                                  }),
+                                  onTap: () {
+                                    // ignore: use_build_context_synchronously
+                                    Navigator.of(context, rootNavigator: true)
+                                        .push(
+                                      MaterialPageRoute(builder: (context) {
+                                        return VideoView(
+                                            videoId:
+                                                '${snapshot.data!.elementAt(index).id}');
+                                      }),
+                                    );
+                                  }));
+                        } else {
+                          // Load more items -> automatically handled by listener if it exists
+                        }
+                      }
+                      return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 32),
+                          child: Center(child: CircularProgressIndicator()));
+                    }),
+                Container(
+                  alignment: Alignment.center,
                   child: Center(
-                      child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Text(
-                      "LibreTube",
-                      maxLines: 1,
-                      style: GoogleFonts.sacramento(fontSize: 30),
-                      overflow: TextOverflow.fade,
+                      child: Container(
+                    alignment: Alignment.center,
+                    child: Row(
+                      children: [
+                        const SizedBox(height: 30),
+                      ],
                     ),
                   )),
                 ),
-                RawMaterialButton(
-                  onPressed: () {
-                    // Open a drawer or a view
-                  },
-                  elevation: 2.0,
-                  fillColor: Colors.white,
-                  child: Icon(
-                    Icons.menu,
-                    size: 35.0,
-                  ),
-                  shape: CircleBorder(),
-                ),
-              ],
-            ),
-          ))),
-      backgroundColor: Colors.pink.shade100,
-      body: FutureBuilder<ChannelUploadsList>(
-            future: loadVideosFromChannel(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                print("Snapshot loading...");
-                return const LoadingView();
-              } else if (snapshot.hasError) {
-                print("Snapshot has error");
-                return const ErrorView();
-              } else if (snapshot.hasData) {
-                print("Snapshot has data");
-                return ListView(
-                  children: [
-                    ClipRRect(
-            borderRadius: BorderRadius.circular(8.0),
-            child: Image.network(
-              widget.localChannel.bannerUrl,
-              fit: BoxFit.cover,
-            ),
-          ),
-          Expanded(
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              decoration: new BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.rectangle,
-                border: Border.all(width: 5.0, color: Colors.white),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: CircleAvatar(
-                      backgroundImage:
-                          NetworkImage(widget.localChannel.logoUrl),
+                Expanded(
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    decoration: new BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      color: Colors.pink.shade100,
+                      border: Border.all(width: 5.0, color: Colors.white),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Column(
-                      children: [
-                        Text(widget.localChannel.title,
-                            style: GoogleFonts.dmSans(
-                                fontWeight: FontWeight.bold)),
-                        Text(
-                            '${widget.localChannel.subscribersCount} Subscribers',
-                            style: GoogleFonts.dmSans()),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Align(
-                      // <---  these 2 lines fixed it
-                      alignment:
-                          Alignment.centerRight, // <---  these 2 lines fixed it
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TextButton(
-                            style: ButtonStyle(
-                              backgroundColor:
-                                  MaterialStateProperty.all<Color>(Colors.red),
-                              foregroundColor: MaterialStateProperty.all<Color>(
-                                  Colors.white),
-                              overlayColor:
-                                  MaterialStateProperty.resolveWith<Color?>(
-                                (Set<MaterialState> states) {
-                                  if (states.contains(MaterialState.hovered))
-                                    return Colors.blue.withOpacity(0.04);
-                                  if (states.contains(MaterialState.focused) ||
-                                      states.contains(MaterialState.pressed))
-                                    return Colors.blue.withOpacity(0.12);
-                                  return null; // Defer to the widget's default.
-                                },
-                              ),
-                            ),
-                            onPressed: () async {
-                              // Get channel data from Youtube API
-                            },
-                            child:
-                                Text('Subscribe', style: GoogleFonts.dmSans())),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-                    ListView.builder(
-                      controller: _scrollController,
-                      shrinkWrap: true,
-                      physics: const ClampingScrollPhysics(),
-                      itemCount: snapshot.data!.length,
-                      itemBuilder: (context, index) {
-                        print("Reached widget building ${snapshot.data!.length}");
-                        if (snapshot.data != null) {
-                          if (index < snapshot.data!.length) {
-                            return Card(
-                                child: ListTile(
-                                    title: Text(
-                                        snapshot.data!
-                                            .elementAt(index)
-                                            .title
-                                            .toString(),
-                                        style: GoogleFonts.dmSans(
-                                            fontWeight: FontWeight.bold)),
-                                    leading: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(8.0)),
-                                        color: Colors.white,
-                                      ),
-                                      child: CachedNetworkImage(
-                                        imageUrl: snapshot.data!
-                                            .elementAt(index)
-                                            .thumbnails
-                                            .mediumResUrl,
-                                        progressIndicatorBuilder: (context, url,
-                                                downloadProgress) =>
-                                            CircularProgressIndicator(
-                                                value: downloadProgress.progress),
-                                        errorWidget: (context, url, error) =>
-                                            Icon(Icons.error),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Stack(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Stack(
+                                  children: <Widget>[
+                                    Positioned.fill(
+                                      child: Container(
+                                        decoration: const BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: <Color>[
+                                              Color(0xFF0D47A1),
+                                              Color(0xFF1976D2),
+                                              Color(0xFF42A5F5),
+                                            ],
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                    trailing: Builder(builder: (context) {
-                                      return Column(
-                                        children: [
-                                          const SizedBox(
-                                            child: Icon(Icons.play_arrow),
-                                          ),
-                                          Container(
-                                            margin: EdgeInsets.only(top: 4),
-                                            child: const SizedBox(
-                                              child: Icon(Icons.bookmark),
-                                            ),
-                                          )
-                                        ],
-                                      );
-                                    }),
-                                    onTap: () {
-                                      // ignore: use_build_context_synchronously
-                                      Navigator.of(context, rootNavigator: true)
-                                          .push(
-                                        MaterialPageRoute(builder: (context) {
-                                          return VideoView(
-                                              videoId:
-                                                  '${snapshot.data!.elementAt(index).id}');
-                                        }),
-                                      );
-                                    }));
-                          } else {
-                            // Load more items
-                          }
-                        }
-                        return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 32),
-                            child: Center(child: CircularProgressIndicator()));
-                      }),
+                                    TextButton(
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.all(16.0),
+                                        textStyle:
+                                            const TextStyle(fontSize: 20),
+                                      ),
+                                      onPressed: () => _fetchNewData(snapshot
+                                          .data!), // Currently not working (assertion on invalid null)
+                                      child: const Text('Load More'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
                       ],
-                );
-              } else {
-                return const ErrorView(); // Something unhandled and bad happened
-              }
-            },
-          ), 
-      
+                    ),
+                  ),
+                ),
+              ],
+            );
+          } else {
+            return const ErrorView(); // Something unhandled and bad happened
+          }
+        },
+      ),
     );
   }
 
@@ -269,5 +323,81 @@ class _ChannelViewState extends State<ChannelView> {
         await ytExplode.channels.getUploadsFromPage(widget.localChannel.id);
     print("Videos length: ${videos.length}");
     return videos;
+  }
+
+  Future _fetchNewData(ChannelUploadsList listVideos) async {
+    MainView.loadingState = true;
+    listVideos = await appendToChannelList(listVideos);
+    MainView.loadingState = false;
+    // Update the ui without rebuilding the whole widget
+    setState(() {
+      // Show a snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Loaded ${listVideos.length} videos'),
+        ),
+      );
+    });
+  }
+
+  PreferredSizeWidget buildTopAppBar() {
+    return PreferredSize(
+        preferredSize: const Size(double.infinity, 65),
+        child: SafeArea(
+            child: Container(
+          decoration: const BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 5,
+                    spreadRadius: 0,
+                    offset: Offset(0, 5))
+              ],
+              borderRadius: BorderRadius.all(Radius.circular(20))),
+          alignment: Alignment.center,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Center(
+                    child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    "OpenTube",
+                    maxLines: 1,
+                    style: GoogleFonts.sacramento(fontSize: 30),
+                    overflow: TextOverflow.fade,
+                  ),
+                )),
+              ),
+              RawMaterialButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                elevation: 2.0,
+                fillColor: Colors.white,
+                child: Icon(
+                  Icons.arrow_circle_right_rounded,
+                  size: 35.0,
+                ),
+                shape: CircleBorder(),
+              )
+            ],
+          ),
+        )));
+  }
+  String getVideoDate(String originalDate) {
+    // Get the first part of the date before space
+    String date = originalDate.split(' ')[0];
+    // Split the date into day, month and year
+    List<String> dateSplit = date.split('-');
+    // Get the month
+    String month = dateSplit[1];
+    // Get the day
+    String day = dateSplit[2];
+    // Get the year
+    String year = dateSplit[0];
+    // Return the date in the format of day month year
+    return '$year-$month-$day';
   }
 }

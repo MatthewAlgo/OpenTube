@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:libretube/video/VideoInfoBottom.dart';
+import 'package:OpenTube/video/VideoInfoBottom.dart';
 import 'package:youtube_data_api/models/video.dart' as vid;
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
@@ -37,60 +37,7 @@ class _TrendingViewState extends State<TrendingView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-          preferredSize: const Size(double.infinity, 65),
-          child: SafeArea(
-              child: Container(
-            decoration: const BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 5,
-                      spreadRadius: 0,
-                      offset: Offset(0, 5))
-                ],
-                borderRadius: BorderRadius.all(Radius.circular(20))),
-            alignment: Alignment.center,
-            child: Row(
-              children: <Widget>[
-                AnimSearchBar(
-                  suffixIcon: Icon(Icons.send),
-                  prefixIcon: Icon(Icons.search_outlined),
-                  width: MediaQuery.of(context).size.width,
-                  textController: _editingcontroller,
-                  onSuffixTap: () {
-                    setState(() {});
-                  },
-                ),
-                Expanded(
-                  child: Center(
-                      child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Text(
-                      "LibreTube",
-                      maxLines: 1,
-                      style: GoogleFonts.sacramento(fontSize: 30),
-                      overflow: TextOverflow.fade,
-                    ),
-                  )),
-                ),
-                RawMaterialButton(
-                  onPressed: () {
-                    // Open a drawer or a view
-                  },
-                  elevation: 2.0,
-                  fillColor: Colors.white,
-                  child: Icon(
-                    Icons.menu,
-                    size: 35.0,
-                  ),
-                  shape: CircleBorder(),
-                ),
-              ],
-            ),
-          ))),
-      backgroundColor: Colors.greenAccent,
+      backgroundColor: Colors.lightBlue.shade100,
       body: BuildCards(context, TrendingView.videoListTrending),
     );
   }
@@ -118,6 +65,26 @@ class _TrendingViewState extends State<TrendingView> {
                         title: Text(list.elementAt(index).title.toString(),
                             style: GoogleFonts.dmSans(
                                 fontWeight: FontWeight.bold)),
+                        subtitle: Column(
+                          children: [
+                            Text(
+                                list.elementAt(index).channelName.toString(),
+                                style: GoogleFonts.dmSans(
+                                    fontWeight: FontWeight.bold)),
+                            Padding(
+                              padding: const EdgeInsets.all(5.0),
+                            ),
+                            Text(list.elementAt(index).views.toString(),
+                                style: GoogleFonts.dmSans(
+                                    fontWeight: FontWeight.bold)),
+                            Padding(
+                              padding: const EdgeInsets.all(5.0),
+                            ),
+                            Text(list.elementAt(index).duration.toString(),
+                                style: GoogleFonts.dmSans(
+                                    fontWeight: FontWeight.bold)),
+                          ],
+                        ),
                         leading: Container(
                           decoration: BoxDecoration(
                             borderRadius:
@@ -157,7 +124,8 @@ class _TrendingViewState extends State<TrendingView> {
                           // ignore: use_build_context_synchronously
                           Navigator.of(context, rootNavigator: true).push(
                             MaterialPageRoute(builder: (context) {
-                              return VideoView(videoId: '${list.elementAt(index).videoId}');
+                              return VideoView(
+                                  videoId: '${list.elementAt(index).videoId}');
                             }),
                           );
                         }));

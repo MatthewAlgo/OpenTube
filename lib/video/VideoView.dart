@@ -2,21 +2,26 @@ import 'dart:collection';
 
 import 'package:anim_search_bar/anim_search_bar.dart';
 import 'package:animation_search_bar/animation_search_bar.dart';
+import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:libretube/video/SimilarVideosView.dart';
-import 'package:libretube/video/VideoInfoBottom.dart';
-import 'package:libretube/views/ErrorView.dart';
-import 'package:libretube/views/HomePage.dart';
-import 'package:libretube/views/LoadingView.dart';
-import 'package:youtube_data_api/models/channel.dart' as chandata;
-import 'package:youtube_data_api/models/video.dart' as viddata;
-import 'package:youtube_data_api/models/video_data.dart';
-import 'package:youtube_data_api/youtube_data_api.dart' as dapi;
+import 'package:hive/hive.dart';
+import 'package:OpenTube/data/Pair.dart';
+import 'package:OpenTube/utilities/LocalStorageRepo.dart';
+import 'package:OpenTube/utilities/VideoUtil.dart';
+import 'package:OpenTube/utilities/VideoUtilH.dart';
+import 'package:OpenTube/video/CommentsView.dart';
+import 'package:OpenTube/video/SameUploaderView.dart';
+import 'package:OpenTube/video/VideoInfoBottom.dart';
+import 'package:OpenTube/views/connection/ErrorView.dart';
+import 'package:OpenTube/views/HomePage.dart';
+import 'package:OpenTube/views/connection/LoadingView.dart';
+import 'package:OpenTube/views/drawer/HistoryView.dart';
+import 'package:OpenTube/views/drawer/SettingsView.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as exp;
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -24,6 +29,8 @@ class VideoView extends StatefulWidget {
   VideoView({Key? key, required String this.videoId}) : super(key: key);
 
   final String videoId;
+
+  static int selectedpage = 0;
 
   @override
   State<VideoView> createState() => _VideoViewState();
@@ -33,19 +40,24 @@ class _VideoViewState extends State<VideoView>
     with AutomaticKeepAliveClientMixin {
   late TextEditingController _seekToController;
   late TextEditingController _editingcontroller;
-  YoutubePlayerController _controller = YoutubePlayerController(
-    initialVideoId: VideoInfo.ID,
-  );
+  late YoutubePlayerController _controller;
   late bool autoPlay;
+
+  late List<exp.Video> videoData;
+  late exp.CommentsList? commentsList;
+
+  PageController _pageController =
+      PageController(keepPage: true, initialPage: 0);
 
   @override
   bool get wantKeepAlive => true;
 
-  // Change views in page bottom
-  int selectedpage = 0;
-
   @override
   void initState() {
+    VideoInfoBottomView.numberOfCallsFromTabChange = 0;
+    VideoView.selectedpage = 0;
+
+    _pageController = PageController();
     _editingcontroller = TextEditingController();
     autoPlay = true;
     _controller = YoutubePlayerController(
@@ -63,106 +75,87 @@ class _VideoViewState extends State<VideoView>
   @override
   void dispose() {
     super.dispose();
+    _pageController.dispose();
+    _editingcontroller.dispose();
+    _controller.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return FutureBuilder(
-        future: _getVideoInformation(widget.videoId),
-        builder: (BuildContext context, AsyncSnapshot<exp.Video> snapshot) {
-          if (snapshot.hasData) {
-            // Populate static video info to be passed further
-            VideoInfo.video = snapshot.data!;
-            // Other elements to be easier to access
-            VideoInfo.ID = widget.videoId;
-            
-            print("VidioID: ${VideoInfo.ID}");
-
-            VideoInfo.author = snapshot.data!.author;
-            VideoInfo.description =
-                snapshot.data!.description.characters.string;
-            VideoInfo.name = snapshot.data!.title;
-            VideoInfo.publishDate = snapshot.data!.publishDate;
-            VideoInfo.channelID = snapshot.data!.channelId;
-            VideoInfo.isLive = snapshot.data!.isLive;
-            VideoInfo.keywords = snapshot.data!.keywords;
-
-            VideoInfoBottomView.NumberOfCallsFromTabChange = 0;
-
-            return MaterialApp(
-                theme: ThemeData(useMaterial3: true),
-                home: Scaffold(
-                  body: videoAppBody(),
-                  appBar: MediaQuery.of(context).orientation ==
-                          Orientation.landscape
-                      ? null // show nothing in lanscape mode
-                      : PreferredSize(
-                          preferredSize: const Size(double.infinity, 65),
-                          child: SafeArea(
-                              child: Container(
-                            decoration: const BoxDecoration(
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                      color: Colors.black26,
-                                      blurRadius: 5,
-                                      spreadRadius: 0,
-                                      offset: Offset(0, 5))
-                                ],
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(20))),
-                            alignment: Alignment.center,
-                            child: Row(
-                              children: <Widget>[
-                                AnimSearchBar(
-                                  suffixIcon: Icon(Icons.send),
-                                  prefixIcon: Icon(Icons.search_outlined),
-                                  width: MediaQuery.of(context).size.width,
-                                  textController: _editingcontroller,
-                                  onSuffixTap: () {
-                                    // setState(() {
-                                    //   _updateState();
-                                    // });
-                                  },
-                                ),
-                                Expanded(
-                                  child: Center(
-                                      child: Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(
-                                      "LibreTube",
-                                      maxLines: 1,
-                                      style:
-                                          GoogleFonts.sacramento(fontSize: 30),
-                                      overflow: TextOverflow.fade,
-                                    ),
-                                  )),
-                                ),
-                                RawMaterialButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  elevation: 2.0,
-                                  fillColor: Colors.white,
-                                  child: Icon(
-                                    Icons.arrow_circle_right_rounded,
-                                    size: 35.0,
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: FutureBuilder(
+          future: _getVideoInformation(widget.videoId),
+          builder: (BuildContext context,
+              AsyncSnapshot<Pair<exp.Video, exp.Channel>> snapshot) {
+            if (snapshot.hasData) {
+              return MaterialApp(
+                  theme: ThemeData(useMaterial3: true),
+                  home: Scaffold(
+                    resizeToAvoidBottomInset: false,
+                    body: videoAppBody(),
+                    appBar: MediaQuery.of(context).orientation ==
+                            Orientation.landscape
+                        ? null // show nothing in lanscape mode
+                        : PreferredSize(
+                            preferredSize: const Size(double.infinity, 65),
+                            child: SafeArea(
+                                child: Container(
+                              decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.black26,
+                                        blurRadius: 5,
+                                        spreadRadius: 0,
+                                        offset: Offset(0, 5))
+                                  ],
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(20))),
+                              alignment: Alignment.center,
+                              child: Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Center(
+                                        child: Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        "OpenTube",
+                                        maxLines: 1,
+                                        style: GoogleFonts.sacramento(
+                                            fontSize: 30),
+                                        overflow: TextOverflow.fade,
+                                      ),
+                                    )),
                                   ),
-                                  shape: CircleBorder(),
-                                )
-                              ],
-                            ),
-                          ))),
-                ));
-          } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return const LoadingView();
-          } else if (snapshot.hasError) {
-            return const ErrorView();
-          } else {
-            return const ErrorView();
-          }
-        });
+                                  RawMaterialButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    elevation: 2.0,
+                                    fillColor: Colors.white,
+                                    child: Icon(
+                                      Icons.arrow_circle_right_rounded,
+                                      size: 35.0,
+                                    ),
+                                    shape: CircleBorder(),
+                                  )
+                                ],
+                              ),
+                            ))),
+                  ));
+            } else if (snapshot.connectionState == ConnectionState.waiting) {
+              return const LoadingView();
+            } else if (snapshot.hasError) {
+              // Print the error
+              print("ErrorView: " + snapshot.error.toString());
+              return const ErrorView();
+            } else {
+              return const ErrorView();
+            }
+          }),
+    );
   }
 
   Widget videoAppBody() {
@@ -172,64 +165,129 @@ class _VideoViewState extends State<VideoView>
         showVideoProgressIndicator: true,
       ),
       builder: (context, player) {
-        return Scaffold(
-          body: Column(
-            children: [
-              player,
-              Flexible(
-                child: IndexedStack(
-                  children: <Widget>[
-                    VideoInfoBottomView(vidIdent: widget.videoId),
-                    SimilarVideosView(),
-                  ],
-                  index: selectedpage,
-                ),
-              ),
-            ],
-          ),
-          bottomNavigationBar:
-              MediaQuery.of(context).orientation == Orientation.landscape
-                  ? null // show nothing in lanscape mode
-                  : ConvexAppBar(
-                      items: [
-                        TabItem(icon: Icons.play_arrow, title: 'Now Playing'),
-                        TabItem(
-                            icon: Icons.video_library_rounded,
-                            title: 'Similar Videos'),
-                      ],
-                      initialActiveIndex: selectedpage,
-                      onTap: (int index) {
-                        setState(() {
-                          selectedpage = index;
-                        });
-                      },
-                    ),
-        );
+        return FutureBuilder(
+            future: _getVideoInformation(widget.videoId),
+            builder: (BuildContext context,
+                AsyncSnapshot<Pair<exp.Video, exp.Channel>> snapshot) {
+              if (snapshot.hasData) {
+                return Scaffold(
+                  body: Column(
+                    children: [
+                      player,
+                      Flexible(
+                        child: PageView(
+                          onPageChanged: (index) {
+                            setState(() => VideoView.selectedpage = index);
+                          },
+                          controller: _pageController,
+                          children: <Widget>[
+                            VideoInfoBottomView(
+                                vidIdent: widget.videoId,
+                                videodata: snapshot.data!), // Can't be null
+                            CommentsView(commentsList: commentsList),
+                            SimilarVideosView(videoRecommended: videoData),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  bottomNavigationBar: MediaQuery.of(context).orientation ==
+                          Orientation.landscape
+                      ? null // show nothing in lanscape mode
+                      : BottomNavyBar(
+                          backgroundColor: Color.fromARGB(255, 255, 255, 255),
+                          selectedIndex: VideoView.selectedpage,
+                          onItemSelected: (index) {
+                            setState(() => VideoView.selectedpage = index);
+                            _pageController.jumpToPage(index);
+                            _pageController.animateToPage(index,
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.ease);
+                          },
+                          items: <BottomNavyBarItem>[
+                            BottomNavyBarItem(
+                                title: Text('Video Home'),
+                                icon: Icon(Icons.home_rounded),
+                                textAlign: TextAlign.center),
+                            BottomNavyBarItem(
+                                title: Text('Comments'),
+                                icon: Icon(Icons.comment_rounded),
+                                textAlign: TextAlign.center),
+                            BottomNavyBarItem(
+                                title: Text('Channel'),
+                                icon: Icon(Icons.trending_up_rounded),
+                                textAlign: TextAlign.center),
+                          ],
+                        ),
+                );
+              } else if (snapshot.connectionState == ConnectionState.waiting) {
+                return const LoadingView();
+              } else if (snapshot.hasError) {
+                // Print the error
+                print("ErrorView: " + snapshot.error.toString());
+                return const ErrorView();
+              } else {
+                return const ErrorView();
+              }
+            });
       },
     );
   }
-}
 
-Future<exp.Video> _getVideoInformation(String videoID) async {
-  exp.YoutubeExplode yt = exp.YoutubeExplode();
-  print('Getting address: https://youtube.com/watch?v=${videoID}');
-  exp.Video video =
-      await yt.videos.get('https://youtube.com/watch?v=${videoID}');
-  return video;
-}
+  Future<Pair<exp.Video, exp.Channel>> _getVideoInformation(
+      String videoID) async {
+    if (VideoInfoBottomView.numberOfCallsFromTabChange == 0) {
+      // Call this only once per video
+      // Get video data from youtube explode
+      exp.YoutubeExplode ytExplode = exp.YoutubeExplode();
+      exp.Video video = await ytExplode.videos.get(videoID);
 
-class VideoInfo {
-  static late exp.Video video;
-  static late String name = "";
-  static late String ID = "";
-  static late String author = "";
-  static late exp.CommentsList comments;
-  static late String description;
-  static late DateTime? publishDate;
-  static late exp.CommentsList? comms;
-  static late exp.ChannelId channelID;
-  static late bool isLive;
-  static late UnmodifiableListView<String> keywords;
-  static late chandata.Channel videoChannel;
-  static late List<viddata.Video> relatedVideos;
+      exp.ChannelClient channelClient = exp.YoutubeExplode().channels;
+      exp.Channel channel = await channelClient.getByVideo(video.id.toString());
+      // Fetch list of videos from the channel
+      List<exp.Video> videos = await ytExplode.channels
+          .getUploads(channel.id)
+          .take(25)
+          .toList(); // 25 videos loaded
+      // Fetch the list of comments for the video
+      commentsList = await ytExplode.videos.comments.getComments(video);
+      videoData = videos;
+
+      // Add video to history
+      AddVideoToHistory(video);
+      return Pair<exp.Video, exp.Channel>(video, channel);
+    } else {
+      return Pair<exp.Video, exp.Channel>(
+          VideoInfoBottomView.savedSnapshot!.getFirst(),
+          VideoInfoBottomView.savedSnapshot!.getSecond());
+    }
+  }
+
+  void AddVideoToHistory(exp.Video video) async {
+    // Only add video to history if the user wants to
+    if (SettingsView.IS_HISTORY_ENABLED) {
+      VideoUtilH videoUtil = VideoUtilH(
+        id: video.id.value,
+        title: video.title.toString(),
+        thumbnailURL: video.thumbnails.mediumResUrl.toString(),
+        videoURL: video.url.toString(),
+      );
+
+      LocalStorageRepository localStorageRepository = LocalStorageRepository();
+      Box box = await localStorageRepository.openBoxVideosHistory();
+      localStorageRepository.addVideoHistorytoList(box, videoUtil);
+
+      // Assign the channel lists
+      HistoryView.listHistoryViewStatic =
+          localStorageRepository.getVideosHistoryList(box);
+      HistoryView.listHistoryViewStaticNotifier.value =
+          HistoryView.listHistoryViewStatic;
+    } else {
+      // Show a snackbar
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Video history is disabled"),
+        duration: Duration(seconds: 2),
+      ));
+    }
+  }
 }

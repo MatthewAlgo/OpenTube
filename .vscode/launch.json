@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "LibreTube",
+      "name": "OpenTube",
       "program": "lib/Main.dart",
       "request": "launch",
       "type": "dart",
