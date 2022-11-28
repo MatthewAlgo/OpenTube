@@ -174,12 +174,6 @@ class _ChannelViewState extends State<ChannelView> {
                                         .toString(),
                                     style: GoogleFonts.dmSans(
                                         fontWeight: FontWeight.bold)),
-                                Padding(
-                                  padding: const EdgeInsets.all(5.0),
-                                ),
-                                Text(snapshot.data!.elementAt(index).description.toString(),
-                                    style: GoogleFonts.dmSans(
-                                        fontWeight: FontWeight.bold)),
                                 Text(snapshot.data!.elementAt(index).uploadDate.toString() != 
                                 "null" ? getVideoDate(snapshot.data!.elementAt(index).uploadDate.toString()) : "Upload Date not available",
                                     style: GoogleFonts.dmSans(

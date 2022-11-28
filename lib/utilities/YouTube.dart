@@ -61,15 +61,16 @@ Future<exp.VideoSearchList> appendToSearchList(
 
 Future<ChannelUploadsList> appendToChannelList(
     ChannelUploadsList uploadsList) async {
+  ChannelUploadsList uploadsListLocal = uploadsList;
   HomePage.loadingState = true;
   exp.YoutubeExplode ytExplode = exp.YoutubeExplode();
   List<exp.Video> nextPage = (await uploadsList.nextPage())!.toList();
   if (nextPage != null && nextPage != uploadsList) {
     for (var video in nextPage.sublist(0)) {
-      uploadsList.add(video);
+      uploadsListLocal.add(video);
     }
   }
 
   // HomePage.loadingState = false;
-  return uploadsList;
+  return uploadsListLocal;
 }
