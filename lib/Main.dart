@@ -3,7 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive/hive.dart';
 import 'package:libretube/services/NotificationManager.dart';
-import 'package:libretube/splash/splash_screen.dart';
+import 'package:libretube/splash/SplashScreen.dart';
 import 'package:libretube/utilities/Channel.dart';
 import 'package:libretube/utilities/VideoUtil.dart';
 import 'package:libretube/utilities/VideoUtilH.dart';
@@ -15,8 +15,6 @@ import 'package:libretube/views/drawer/SettingsView.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-/// TODO: Add a splash screen
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
