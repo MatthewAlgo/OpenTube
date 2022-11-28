@@ -74,77 +74,75 @@ class _ChannelViewState extends State<ChannelView> {
                     errorWidget: (context, url, error) => Icon(Icons.error),
                   ),
                 ),
-                Expanded(
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    decoration: new BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.rectangle,
-                      border: Border.all(width: 5.0, color: Colors.white),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: CircleAvatar(
-                            backgroundImage:
-                                NetworkImage(widget.localChannel.logoUrl),
-                          ),
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  decoration: new BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.rectangle,
+                    border: Border.all(width: 5.0, color: Colors.white),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: CircleAvatar(
+                          backgroundImage:
+                              NetworkImage(widget.localChannel.logoUrl),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Column(
-                            children: [
-                              Text(widget.localChannel.title,
-                                  style: GoogleFonts.dmSans(
-                                      fontWeight: FontWeight.bold)),
-                              Text(
-                                  '${widget.localChannel.subscribersCount} Subscribers',
-                                  style: GoogleFonts.dmSans()),
-                            ],
-                          ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Column(
+                          children: [
+                            Text(widget.localChannel.title,
+                                style: GoogleFonts.dmSans(
+                                    fontWeight: FontWeight.bold)),
+                            Text(
+                                '${widget.localChannel.subscribersCount} Subscribers',
+                                style: GoogleFonts.dmSans()),
+                          ],
                         ),
-                        Expanded(
-                          child: Align(
-                            // <---  these 2 lines fixed it
-                            alignment: Alignment
-                                .centerRight, // <---  these 2 lines fixed it
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: TextButton(
-                                  style: ButtonStyle(
-                                    backgroundColor:
-                                        MaterialStateProperty.all<Color>(
-                                            Colors.red),
-                                    foregroundColor:
-                                        MaterialStateProperty.all<Color>(
-                                            Colors.white),
-                                    overlayColor: MaterialStateProperty
-                                        .resolveWith<Color?>(
-                                      (Set<MaterialState> states) {
-                                        if (states
-                                            .contains(MaterialState.hovered))
-                                          return Colors.blue.withOpacity(0.04);
-                                        if (states.contains(
-                                                MaterialState.focused) ||
-                                            states.contains(
-                                                MaterialState.pressed))
-                                          return Colors.blue.withOpacity(0.12);
-                                        return null; // Defer to the widget's default.
-                                      },
-                                    ),
+                      ),
+                      Expanded(
+                        child: Align(
+                          // <---  these 2 lines fixed it
+                          alignment: Alignment
+                              .centerRight, // <---  these 2 lines fixed it
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: TextButton(
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      MaterialStateProperty.all<Color>(
+                                          Colors.red),
+                                  foregroundColor:
+                                      MaterialStateProperty.all<Color>(
+                                          Colors.white),
+                                  overlayColor: MaterialStateProperty
+                                      .resolveWith<Color?>(
+                                    (Set<MaterialState> states) {
+                                      if (states
+                                          .contains(MaterialState.hovered))
+                                        return Colors.blue.withOpacity(0.04);
+                                      if (states.contains(
+                                              MaterialState.focused) ||
+                                          states.contains(
+                                              MaterialState.pressed))
+                                        return Colors.blue.withOpacity(0.12);
+                                      return null; // Defer to the widget's default.
+                                    },
                                   ),
-                                  onPressed: () async {
-                                    // Get channel data from Youtube API
-                                  },
-                                  child: Text('Subscribe',
-                                      style: GoogleFonts.dmSans())),
-                            ),
+                                ),
+                                onPressed: () async {
+                                  // Get channel data from Youtube API
+                                },
+                                child: Text('Subscribe',
+                                    style: GoogleFonts.dmSans())),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
                 ListView.builder(
@@ -245,59 +243,57 @@ class _ChannelViewState extends State<ChannelView> {
                     ),
                   )),
                 ),
-                Expanded(
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    decoration: new BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      color: Colors.pink.shade100,
-                      border: Border.all(width: 5.0, color: Colors.white),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Stack(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Stack(
-                                  children: <Widget>[
-                                    Positioned.fill(
-                                      child: Container(
-                                        decoration: const BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: <Color>[
-                                              Color(0xFF0D47A1),
-                                              Color(0xFF1976D2),
-                                              Color(0xFF42A5F5),
-                                            ],
-                                          ),
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  decoration: new BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    color: Colors.pink.shade100,
+                    border: Border.all(width: 5.0, color: Colors.white),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Stack(
+                                children: <Widget>[
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: <Color>[
+                                            Color(0xFF0D47A1),
+                                            Color(0xFF1976D2),
+                                            Color(0xFF42A5F5),
+                                          ],
                                         ),
                                       ),
                                     ),
-                                    TextButton(
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.all(16.0),
-                                        textStyle:
-                                            const TextStyle(fontSize: 20),
-                                      ),
-                                      onPressed: () => _fetchNewData(snapshot
-                                          .data!), // Currently not working (assertion on invalid null)
-                                      child: const Text('Load More'),
+                                  ),
+                                  TextButton(
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.all(16.0),
+                                      textStyle:
+                                          const TextStyle(fontSize: 20),
                                     ),
-                                  ],
-                                ),
+                                    onPressed: () => _fetchNewData(snapshot
+                                        .data!), // Currently not working (assertion on invalid null)
+                                    child: const Text('Load More'),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        )
-                      ],
-                    ),
+                          ),
+                        ],
+                      )
+                    ],
                   ),
                 ),
               ],
