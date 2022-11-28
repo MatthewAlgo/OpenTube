@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:downloads_path_provider/downloads_path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get_connect/http/src/request/request.dart';
@@ -24,13 +23,11 @@ class DownloaderForYoutube {
       await Permission.storage.request();
     }
     if (status.isGranted) {
-      // the downloads folder path
-      Directory tempDir = await DownloadsPathProvider.downloadsDirectory;
-      String tempPath = tempDir.path;
+      String tempPath = "/storage/emulated/0/Download";
 
       // If the directory doesn't exist, create it
-      if (!await Directory("${tempDir.path}" + '/libretube-video').exists()) {
-        await Directory("${tempDir.path}" + '/libretube-video').create();
+      if (!await Directory("${tempPath}" + '/libretube-video').exists()) {
+        await Directory("${tempPath}" + '/libretube-video').create();
       }
 
       var yt = YoutubeExplode();
@@ -104,13 +101,12 @@ class DownloaderForYoutube {
       await Permission.storage.request();
     }
     if (status.isGranted) {
-      // the downloads folder path
-      Directory tempDir = await DownloadsPathProvider.downloadsDirectory;
-      String tempPath = tempDir.path;
+      // The downloads folder path
+      String tempPath = "/storage/emulated/0/Download";
 
       // If the directory doesn't exist, create it
-      if (!await Directory("${tempDir.path}" + '/libretube-audio').exists()) {
-        await Directory("${tempDir.path}" + '/libretube-audio').create();
+      if (!await Directory("${tempPath}" + '/libretube-audio').exists()) {
+        await Directory("${tempPath}" + '/libretube-audio').create();
       }
 
       var yt = YoutubeExplode();

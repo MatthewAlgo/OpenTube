@@ -68,7 +68,6 @@ dependencies:
   flutter_screenutil: ^5.5.4
   shared_preferences: ^2.0.15
   flutter_downloader: ^1.9.1
-  downloads_path_provider: any
   permission_handler: ^10.2.0
   timezone: ^0.9.0
   rxdart: ^0.27.7
