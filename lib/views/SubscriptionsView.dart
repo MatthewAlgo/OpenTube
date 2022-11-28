@@ -9,10 +9,10 @@ import 'package:json_store/json_store.dart';
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:libretube/utilities/Channel.dart' as chan;
-import 'package:libretube/utilities/LocalStorageRepo.dart';
-import 'package:libretube/views/ChannelView.dart';
-import 'package:libretube/views/connection/EmptyPage.dart';
+import 'package:OpenTube/utilities/Channel.dart' as chan;
+import 'package:OpenTube/utilities/LocalStorageRepo.dart';
+import 'package:OpenTube/views/ChannelView.dart';
+import 'package:OpenTube/views/connection/EmptyPage.dart';
 import 'package:youtube_data_api/models/channel.dart' as datachan;
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as ytExp;
 

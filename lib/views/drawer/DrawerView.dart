@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:libretube/views/drawer/HistoryView.dart';
-import 'package:libretube/views/drawer/SavedVideos.dart';
-import 'package:libretube/views/drawer/SettingsView.dart';
+import 'package:OpenTube/views/drawer/HistoryView.dart';
+import 'package:OpenTube/views/drawer/SavedVideos.dart';
+import 'package:OpenTube/views/drawer/SettingsView.dart';
 
 class DrawerView extends StatefulWidget {
   const DrawerView({super.key});
@@ -29,7 +29,7 @@ class _DrawerViewState extends State<DrawerView> {
                 color: Colors.lightBlue,
               ),
               child: Text(
-                'LibreTube',
+                'OpenTube',
                 style: GoogleFonts.adventPro(
                   color: Colors.white,
                   fontSize: 24,

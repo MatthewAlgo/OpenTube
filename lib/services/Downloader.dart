@@ -26,8 +26,8 @@ class DownloaderForYoutube {
       String tempPath = "/storage/emulated/0/Download";
 
       // If the directory doesn't exist, create it
-      if (!await Directory("${tempPath}" + '/libretube-video').exists()) {
-        await Directory("${tempPath}" + '/libretube-video').create();
+      if (!await Directory("${tempPath}" + '/OpenTube-video').exists()) {
+        await Directory("${tempPath}" + '/OpenTube-video').create();
       }
 
       var yt = YoutubeExplode();
@@ -40,7 +40,7 @@ class DownloaderForYoutube {
       }
 
       var filePath =
-          tempPath + '/libretube-video' + '/${videoDataTrimmed}' + '.mp4';
+          tempPath + '/OpenTube-video' + '/${videoDataTrimmed}' + '.mp4';
       var streamManifest = await yt.videos.streamsClient.getManifest(id);
       // Get highest quality muxed stream
       var streamInfo = streamManifest.muxed.withHighestBitrate();
@@ -52,7 +52,7 @@ class DownloaderForYoutube {
       // If the file doesn't exist, create it
       if (!await file.exists()) {
         service.showNotification(
-            1, 'Video Downloading...','Downloading ${videoData.title}...');
+            1, 'Video Downloading...', 'Downloading ${videoData.title}...');
 
         await file.create();
 
@@ -65,8 +65,8 @@ class DownloaderForYoutube {
         // Close the file.
         await fileStream.flush();
         await fileStream.close();
-        service.showNotification(
-            1, 'Video Downloaded','Downloaded ${videoData.title} at ${filePath}');
+        service.showNotification(1, 'Video Downloaded',
+            'Downloaded ${videoData.title} at ${filePath}');
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -105,8 +105,8 @@ class DownloaderForYoutube {
       String tempPath = "/storage/emulated/0/Download";
 
       // If the directory doesn't exist, create it
-      if (!await Directory("${tempPath}" + '/libretube-audio').exists()) {
-        await Directory("${tempPath}" + '/libretube-audio').create();
+      if (!await Directory("${tempPath}" + '/OpenTube-audio').exists()) {
+        await Directory("${tempPath}" + '/OpenTube-audio').create();
       }
 
       var yt = YoutubeExplode();
@@ -119,7 +119,7 @@ class DownloaderForYoutube {
       }
 
       var filePath =
-          tempPath + '/libretube-audio' + '/${audioDataTrimmed}' + '.mp3';
+          tempPath + '/OpenTube-audio' + '/${audioDataTrimmed}' + '.mp3';
       var streamManifest = await yt.videos.streamsClient.getManifest(id);
       // Get highest quality muxed stream
       var streamInfo = streamManifest.audioOnly.withHighestBitrate();
@@ -130,7 +130,7 @@ class DownloaderForYoutube {
       // If the file doesn't exist, create it
       if (!await file.exists()) {
         service.showNotification(
-            1, 'Audio Downloading...','Downloading ${audioData.title}...');
+            1, 'Audio Downloading...', 'Downloading ${audioData.title}...');
 
         await file.create();
 
@@ -143,8 +143,8 @@ class DownloaderForYoutube {
         // Close the file.
         await fileStream.flush();
         await fileStream.close();
-        service.showNotification(
-            1, 'Audio Downloaded','Downloaded ${audioData.title} at ${filePath}');
+        service.showNotification(1, 'Audio Downloaded',
+            'Downloaded ${audioData.title} at ${filePath}');
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

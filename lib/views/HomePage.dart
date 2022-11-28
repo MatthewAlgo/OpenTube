@@ -12,14 +12,14 @@ import 'package:flutter_image/network.dart';
 import 'package:flutter_zoom_drawer/config.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:libretube/views/DiscoverView.dart';
-import 'package:libretube/views/TrendingView.dart';
-import 'package:libretube/views/connection/ErrorView.dart';
-import 'package:libretube/views/connection/LoadingView.dart';
-import 'package:libretube/views/MainView.dart';
-import 'package:libretube/views/SubscriptionsView.dart';
-import 'package:libretube/video/VideoView.dart';
-import 'package:libretube/views/drawer/DrawerView.dart';
+import 'package:OpenTube/views/DiscoverView.dart';
+import 'package:OpenTube/views/TrendingView.dart';
+import 'package:OpenTube/views/connection/ErrorView.dart';
+import 'package:OpenTube/views/connection/LoadingView.dart';
+import 'package:OpenTube/views/MainView.dart';
+import 'package:OpenTube/views/SubscriptionsView.dart';
+import 'package:OpenTube/video/VideoView.dart';
+import 'package:OpenTube/views/drawer/DrawerView.dart';
 import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -168,7 +168,7 @@ class _HomePageState extends State<HomePage>
                     child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Text(
-                    "LibreTube",
+                    "OpenTube",
                     maxLines: 1,
                     style: GoogleFonts.sacramento(fontSize: 30),
                     overflow: TextOverflow.fade,

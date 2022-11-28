@@ -2,9 +2,9 @@ import 'package:anim_search_bar/anim_search_bar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:libretube/utilities/YouTube.dart';
-import 'package:libretube/views/connection/ErrorView.dart';
-import 'package:libretube/views/connection/LoadingView.dart';
+import 'package:OpenTube/utilities/YouTube.dart';
+import 'package:OpenTube/views/connection/ErrorView.dart';
+import 'package:OpenTube/views/connection/LoadingView.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as ytExp;
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -165,6 +165,27 @@ class _ChannelViewState extends State<ChannelView> {
                                           .toString(),
                                       style: GoogleFonts.dmSans(
                                           fontWeight: FontWeight.bold)),
+                                   subtitle: Column(
+                              children: [
+                                Text(
+                                    snapshot.data!
+                                        .elementAt(index)
+                                        .author
+                                        .toString(),
+                                    style: GoogleFonts.dmSans(
+                                        fontWeight: FontWeight.bold)),
+                                Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                ),
+                                Text(snapshot.data!.elementAt(index).description.toString(),
+                                    style: GoogleFonts.dmSans(
+                                        fontWeight: FontWeight.bold)),
+                                Text(snapshot.data!.elementAt(index).uploadDate.toString() != 
+                                "null" ? getVideoDate(snapshot.data!.elementAt(index).uploadDate.toString()) : "Upload Date not available",
+                                    style: GoogleFonts.dmSans(
+                                        fontWeight: FontWeight.bold)),
+                              ],
+                            ),
                                   leading: Container(
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.all(
@@ -342,7 +363,7 @@ class _ChannelViewState extends State<ChannelView> {
                     child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Text(
-                    "LibreTube",
+                    "OpenTube",
                     maxLines: 1,
                     style: GoogleFonts.sacramento(fontSize: 30),
                     overflow: TextOverflow.fade,
@@ -364,5 +385,19 @@ class _ChannelViewState extends State<ChannelView> {
             ],
           ),
         )));
+  }
+  String getVideoDate(String originalDate) {
+    // Get the first part of the date before space
+    String date = originalDate.split(' ')[0];
+    // Split the date into day, month and year
+    List<String> dateSplit = date.split('-');
+    // Get the month
+    String month = dateSplit[1];
+    // Get the day
+    String day = dateSplit[2];
+    // Get the year
+    String year = dateSplit[0];
+    // Return the date in the format of day month year
+    return '$year-$month-$day';
   }
 }

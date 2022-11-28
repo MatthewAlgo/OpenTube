@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.matthewalgo" "\0"
-            VALUE "FileDescription", "libretube" "\0"
+            VALUE "FileDescription", "OpenTube" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "libretube" "\0"
+            VALUE "InternalName", "OpenTube" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2022 com.matthewalgo. All rights reserved." "\0"
-            VALUE "OriginalFilename", "libretube.exe" "\0"
-            VALUE "ProductName", "libretube" "\0"
+            VALUE "OriginalFilename", "OpenTube.exe" "\0"
+            VALUE "ProductName", "OpenTube" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

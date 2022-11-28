@@ -10,18 +10,18 @@ import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-import 'package:libretube/data/Pair.dart';
-import 'package:libretube/utilities/LocalStorageRepo.dart';
-import 'package:libretube/utilities/VideoUtil.dart';
-import 'package:libretube/utilities/VideoUtilH.dart';
-import 'package:libretube/video/CommentsView.dart';
-import 'package:libretube/video/SameUploaderView.dart';
-import 'package:libretube/video/VideoInfoBottom.dart';
-import 'package:libretube/views/connection/ErrorView.dart';
-import 'package:libretube/views/HomePage.dart';
-import 'package:libretube/views/connection/LoadingView.dart';
-import 'package:libretube/views/drawer/HistoryView.dart';
-import 'package:libretube/views/drawer/SettingsView.dart';
+import 'package:OpenTube/data/Pair.dart';
+import 'package:OpenTube/utilities/LocalStorageRepo.dart';
+import 'package:OpenTube/utilities/VideoUtil.dart';
+import 'package:OpenTube/utilities/VideoUtilH.dart';
+import 'package:OpenTube/video/CommentsView.dart';
+import 'package:OpenTube/video/SameUploaderView.dart';
+import 'package:OpenTube/video/VideoInfoBottom.dart';
+import 'package:OpenTube/views/connection/ErrorView.dart';
+import 'package:OpenTube/views/HomePage.dart';
+import 'package:OpenTube/views/connection/LoadingView.dart';
+import 'package:OpenTube/views/drawer/HistoryView.dart';
+import 'package:OpenTube/views/drawer/SettingsView.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as exp;
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -121,7 +121,7 @@ class _VideoViewState extends State<VideoView>
                                         child: Padding(
                                       padding: const EdgeInsets.all(12),
                                       child: Text(
-                                        "LibreTube",
+                                        "OpenTube",
                                         maxLines: 1,
                                         style: GoogleFonts.sacramento(
                                             fontSize: 30),
@@ -282,7 +282,7 @@ class _VideoViewState extends State<VideoView>
           localStorageRepository.getVideosHistoryList(box);
       HistoryView.listHistoryViewStaticNotifier.value =
           HistoryView.listHistoryViewStatic;
-    }else{
+    } else {
       // Show a snackbar
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Video history is disabled"),

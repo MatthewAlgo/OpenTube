@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:libretube/utilities/VideoUtilH.dart';
+import 'package:OpenTube/utilities/VideoUtilH.dart';
 
 import 'Channel.dart';
 import 'VideoUtil.dart';

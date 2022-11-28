@@ -5,11 +5,11 @@ import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-import 'package:libretube/utilities/LocalStorageRepo.dart';
-import 'package:libretube/utilities/VideoUtil.dart';
-import 'package:libretube/video/VideoView.dart';
-import 'package:libretube/views/connection/EmptyPage.dart';
-import 'package:libretube/views/connection/ErrorView.dart';
+import 'package:OpenTube/utilities/LocalStorageRepo.dart';
+import 'package:OpenTube/utilities/VideoUtil.dart';
+import 'package:OpenTube/video/VideoView.dart';
+import 'package:OpenTube/views/connection/EmptyPage.dart';
+import 'package:OpenTube/views/connection/ErrorView.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as ytExp;
 
 import '../HomePage.dart';
@@ -71,7 +71,7 @@ class _SavedVideosState extends State<SavedVideos> {
                             child: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Text(
-                            "LibreTube",
+                            "OpenTube",
                             maxLines: 1,
                             style: GoogleFonts.sacramento(fontSize: 30),
                             overflow: TextOverflow.fade,
@@ -147,8 +147,7 @@ class _SavedVideosState extends State<SavedVideos> {
                           // Open The Channel Page using ytExplode
                           ytExp.YoutubeExplode ytExplode =
                               ytExp.YoutubeExplode();
-                          ytExp.Video playlistVideos = await ytExplode
-                              .videos
+                          ytExp.Video playlistVideos = await ytExplode.videos
                               .get(SavedVideos.listSavedVideosStatic
                                   .elementAt(index)
                                   .id);
@@ -205,7 +204,7 @@ class _SavedVideosState extends State<SavedVideos> {
                   TextButton(
                     onPressed: () async {
                       VideoUtil video = new VideoUtil(
-                        videoURL: savedVideoLocal.videoURL,
+                          videoURL: savedVideoLocal.videoURL,
                           id: savedVideoLocal.id,
                           title: savedVideoLocal.title,
                           thumbnailURL: savedVideoLocal.thumbnailURL);
@@ -213,7 +212,8 @@ class _SavedVideosState extends State<SavedVideos> {
                       // Unsubscribe and refresh list
                       LocalStorageRepository localStorageRepository =
                           LocalStorageRepository();
-                      Box box = await localStorageRepository.openBoxSavedVideos();
+                      Box box =
+                          await localStorageRepository.openBoxSavedVideos();
                       localStorageRepository.removeSavedVideoFromList(
                           box, video);
 

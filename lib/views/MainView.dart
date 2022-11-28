@@ -12,18 +12,18 @@ import 'package:flutter_zoom_drawer/config.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-import 'package:libretube/utilities/VideoUtil.dart';
-import 'package:libretube/utilities/VideoUtilH.dart';
-import 'package:libretube/views/DiscoverView.dart';
-import 'package:libretube/views/HomePage.dart';
-import 'package:libretube/views/connection/NoResultsView.dart';
-import 'package:libretube/views/TrendingView.dart';
-import 'package:libretube/views/connection/ErrorView.dart';
-import 'package:libretube/views/connection/LoadingView.dart';
-import 'package:libretube/views/SubscriptionsView.dart';
-import 'package:libretube/video/VideoView.dart';
-import 'package:libretube/views/drawer/HistoryView.dart';
-import 'package:libretube/views/drawer/SavedVideos.dart';
+import 'package:OpenTube/utilities/VideoUtil.dart';
+import 'package:OpenTube/utilities/VideoUtilH.dart';
+import 'package:OpenTube/views/DiscoverView.dart';
+import 'package:OpenTube/views/HomePage.dart';
+import 'package:OpenTube/views/connection/NoResultsView.dart';
+import 'package:OpenTube/views/TrendingView.dart';
+import 'package:OpenTube/views/connection/ErrorView.dart';
+import 'package:OpenTube/views/connection/LoadingView.dart';
+import 'package:OpenTube/views/SubscriptionsView.dart';
+import 'package:OpenTube/video/VideoView.dart';
+import 'package:OpenTube/views/drawer/HistoryView.dart';
+import 'package:OpenTube/views/drawer/SavedVideos.dart';
 import 'package:new_gradient_app_bar/new_gradient_app_bar.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:youtube_data_api/models/playlist.dart';
@@ -43,7 +43,7 @@ class MainView extends StatefulWidget {
   static bool loadingState = false; // Acts like a pseudo-mutex
   static int init_counter_from_rebuild = 0;
   static List<Video> VideosSearchedList = [];
-  
+
   static int isLoadingState = 0;
 
   static ValueNotifier<bool> wannaRebuild = ValueNotifier(false);
@@ -55,7 +55,7 @@ class MainView extends StatefulWidget {
 class _MainViewState extends State<MainView>
     with AutomaticKeepAliveClientMixin<MainView> {
   late VideoSearchList VideosSearched;
-  
+
   final ScrollController controller = ScrollController();
   static bool comingFromFetch = false;
 
@@ -65,8 +65,7 @@ class _MainViewState extends State<MainView>
     var focusNode = FocusNode();
     controller.addListener(() async {
       if (controller.position.atEdge &&
-          !(controller.position.pixels == 0) &&
-          !MainView.loadingState) {
+          !(controller.position.pixels == 0)) {
         await _fetchNewData();
       }
     });
@@ -107,7 +106,7 @@ class _MainViewState extends State<MainView>
       },
       child: ListView.builder(
           controller: controller,
-          itemCount: list?.length ?? 0 + 1,
+          itemCount: list?.length ?? 0,
           itemBuilder: (context, index) {
             if (list != null && index < list.length) {
               return Card(
@@ -116,7 +115,8 @@ class _MainViewState extends State<MainView>
                           style:
                               GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
                       subtitle: Text(list.elementAt(index).description,
-                          style: GoogleFonts.dmSans()),
+                              style: GoogleFonts.dmSans()),
+                      // Under the description add the upload date
                       leading: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.all(Radius.circular(8.0)),
@@ -302,7 +302,7 @@ class _MainViewState extends State<MainView>
       } else {
         comingFromFetch = false;
       }
-      
+
       MainView.loadingState = false;
       MainView.isLoadingState = 0;
       return MainView.VideosSearchedList;
@@ -322,5 +322,20 @@ class _MainViewState extends State<MainView>
       await _updateState();
     });
     return MainView.VideosSearchedList;
+  }
+
+   String getVideoDate(String originalDate) {
+    // Get the first part of the date before space
+    String date = originalDate.split(' ')[0];
+    // Split the date into day, month and year
+    List<String> dateSplit = date.split('-');
+    // Get the month
+    String month = dateSplit[1];
+    // Get the day
+    String day = dateSplit[2];
+    // Get the year
+    String year = dateSplit[0];
+    // Return the date in the format of day month year
+    return '$year-$month-$day';
   }
 }

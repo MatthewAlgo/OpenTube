@@ -1,8 +1,8 @@
 import 'package:hive/hive.dart';
-import 'package:libretube/utilities/BaseLocalStorageRepo.dart';
-import 'package:libretube/utilities/Channel.dart';
-import 'package:libretube/utilities/VideoUtil.dart';
-import 'package:libretube/utilities/VideoUtilH.dart';
+import 'package:OpenTube/utilities/BaseLocalStorageRepo.dart';
+import 'package:OpenTube/utilities/Channel.dart';
+import 'package:OpenTube/utilities/VideoUtil.dart';
+import 'package:OpenTube/utilities/VideoUtilH.dart';
 
 class LocalStorageRepository extends BaseLocalStorageRepository {
   String boxName = 'channel_subscriptions';
@@ -11,7 +11,8 @@ class LocalStorageRepository extends BaseLocalStorageRepository {
 
   // For channel subscriptions
   @override
-  Future<Box> openBox() async { // Opens default (channel) box
+  Future<Box> openBox() async {
+    // Opens default (channel) box
     Box box = await Hive.openBox<Channel>(boxName);
     return box;
   }
@@ -63,7 +64,6 @@ class LocalStorageRepository extends BaseLocalStorageRepository {
     await box.delete(video.id);
   }
 
-
   // For videos history
   @override
   Future<Box> openBoxVideosHistory() async {
@@ -90,5 +90,4 @@ class LocalStorageRepository extends BaseLocalStorageRepository {
   Future<void> removeVideoHistoryFromList(Box box, VideoUtilH video) async {
     await box.delete(video.id);
   }
-
 }

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:libretube/video/VideoInfoBottom.dart';
+import 'package:OpenTube/video/VideoInfoBottom.dart';
 import 'package:youtube_data_api/models/video.dart' as vid;
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
@@ -65,6 +65,26 @@ class _TrendingViewState extends State<TrendingView> {
                         title: Text(list.elementAt(index).title.toString(),
                             style: GoogleFonts.dmSans(
                                 fontWeight: FontWeight.bold)),
+                        subtitle: Column(
+                          children: [
+                            Text(
+                                list.elementAt(index).channelName.toString(),
+                                style: GoogleFonts.dmSans(
+                                    fontWeight: FontWeight.bold)),
+                            Padding(
+                              padding: const EdgeInsets.all(5.0),
+                            ),
+                            Text(list.elementAt(index).views.toString(),
+                                style: GoogleFonts.dmSans(
+                                    fontWeight: FontWeight.bold)),
+                            Padding(
+                              padding: const EdgeInsets.all(5.0),
+                            ),
+                            Text(list.elementAt(index).duration.toString(),
+                                style: GoogleFonts.dmSans(
+                                    fontWeight: FontWeight.bold)),
+                          ],
+                        ),
                         leading: Container(
                           decoration: BoxDecoration(
                             borderRadius:
@@ -104,7 +124,8 @@ class _TrendingViewState extends State<TrendingView> {
                           // ignore: use_build_context_synchronously
                           Navigator.of(context, rootNavigator: true).push(
                             MaterialPageRoute(builder: (context) {
-                              return VideoView(videoId: '${list.elementAt(index).videoId}');
+                              return VideoView(
+                                  videoId: '${list.elementAt(index).videoId}');
                             }),
                           );
                         }));

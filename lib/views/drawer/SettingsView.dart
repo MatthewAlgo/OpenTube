@@ -2,13 +2,13 @@ import 'package:anim_search_bar/anim_search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-import 'package:libretube/utilities/LocalStorageRepo.dart';
-import 'package:libretube/views/ChannelView.dart';
-import 'package:libretube/views/HomePage.dart';
-import 'package:libretube/views/MainView.dart';
-import 'package:libretube/views/SubscriptionsView.dart';
-import 'package:libretube/views/drawer/HistoryView.dart';
-import 'package:libretube/views/drawer/SavedVideos.dart';
+import 'package:OpenTube/utilities/LocalStorageRepo.dart';
+import 'package:OpenTube/views/ChannelView.dart';
+import 'package:OpenTube/views/HomePage.dart';
+import 'package:OpenTube/views/MainView.dart';
+import 'package:OpenTube/views/SubscriptionsView.dart';
+import 'package:OpenTube/views/drawer/HistoryView.dart';
+import 'package:OpenTube/views/drawer/SavedVideos.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsView extends StatefulWidget {
@@ -69,7 +69,7 @@ class _SettingsViewState extends State<SettingsView> {
                             child: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Text(
-                            "LibreTube",
+                            "OpenTube",
                             maxLines: 1,
                             style: GoogleFonts.sacramento(fontSize: 30),
                             overflow: TextOverflow.fade,

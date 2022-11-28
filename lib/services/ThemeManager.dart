@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:libretube/services/ThemeStorageManager.dart';
+import 'package:OpenTube/services/ThemeStorageManager.dart';
 
 class ThemeNotifier with ChangeNotifier {
   final darkTheme = ThemeData(

@@ -3,13 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:libretube/video/VideoInfoBottom.dart';
-import 'package:libretube/video/VideoView.dart';
+import 'package:OpenTube/video/VideoInfoBottom.dart';
+import 'package:OpenTube/video/VideoView.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart' as exp;
 
 class SimilarVideosView extends StatefulWidget {
-  SimilarVideosView(
-      {Key? key, required List<exp.Video> this.videoRecommended})
+  SimilarVideosView({Key? key, required List<exp.Video> this.videoRecommended})
       : super(key: key);
 
   List<exp.Video> videoRecommended;
@@ -42,8 +41,9 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
                 ),
                 leading: CachedNetworkImage(
                   imageUrl: widget.videoRecommended
-                          .elementAt(index)
-                          .thumbnails.mediumResUrl,
+                      .elementAt(index)
+                      .thumbnails
+                      .mediumResUrl,
                   progressIndicatorBuilder: (context, url, downloadProgress) =>
                       CircularProgressIndicator(
                           value: downloadProgress.progress),

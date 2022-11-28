@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-
-import 'package:libretube/splash/Logo.dart';
-import 'package:libretube/views/HomePage.dart';
+import 'package:OpenTube/splash/Logo.dart';
+import 'package:OpenTube/views/HomePage.dart';
 
 class Splash extends StatefulWidget {
   const Splash({super.key});
