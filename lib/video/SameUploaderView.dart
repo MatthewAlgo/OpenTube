@@ -39,6 +39,16 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
                   widget.videoRecommended.elementAt(index).title,
                   style: GoogleFonts.dmSans(),
                 ),
+                 subtitle: Column(
+                   children: [
+                     Text(widget.videoRecommended.elementAt(index).description,
+                                  style: GoogleFonts.dmSans()),
+                      Text(widget.videoRecommended.elementAt(index).author.toString() != "null" ? widget.videoRecommended.elementAt(index).author.toString() : "Unknown author",
+                                  style: GoogleFonts.dmSans()),
+                      Text(widget.videoRecommended.elementAt(index).uploadDate.toString() != "null" ? getVideoDate(widget.videoRecommended.elementAt(index).uploadDate.toString()) : "Unknown upload date",
+                                  style: GoogleFonts.dmSans()),
+                   ],
+                 ),
                 leading: CachedNetworkImage(
                   imageUrl: widget.videoRecommended
                       .elementAt(index)
@@ -65,5 +75,19 @@ class _SimilarVideosViewState extends State<SimilarVideosView> {
         },
       ),
     );
+  }
+  String getVideoDate(String originalDate) {
+    // Get the first part of the date before space
+    String date = originalDate.split(' ')[0];
+    // Split the date into day, month and year
+    List<String> dateSplit = date.split('-');
+    // Get the month
+    String month = dateSplit[1];
+    // Get the day
+    String day = dateSplit[2];
+    // Get the year
+    String year = dateSplit[0];
+    // Return the date in the format of day month year
+    return '$year-$month-$day';
   }
 }
